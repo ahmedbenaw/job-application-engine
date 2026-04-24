@@ -1,0 +1,44 @@
+# Job Application Engine — .gitignore
+
+# Session logs and personal application data (never commit these)
+session-log/
+session-logs/
+*.session.md
+*.session.json
+application-outcomes/
+
+# Completed personal profile files (keep template, exclude filled versions)
+references/applicant-profile-filled.md
+references/applicant-profile-personal.md
+references/candidate-profile.md
+
+# Offer data and salary ground-truth (personal financial information)
+references/salary-actuals.md
+references/offer-history.md
+
+# Cover letter drafts (session outputs, not repo assets)
+drafts/
+*.draft.md
+
+# Operating system files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Editor directories
+.vscode/
+.idea/
+*.code-workspace
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Zip archives (built programmatically, not stored in repo)
+*.zip
+*.tar.gz
+
+# Personal exclusion lists (may contain sensitive geography or company data)
+references/excluded-companies-personal.md

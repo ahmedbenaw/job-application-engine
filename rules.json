@@ -1,0 +1,316 @@
+{
+  "skill": {
+    "name": "job-application-engine",
+    "version": "1.0.0",
+    "edition": "generic-universal",
+    "author": "Ahmed Ossama | Product Leader, Builder & Venture Management Architect",
+    "external_dependencies": "none"
+  },
+  "scoring": {
+    "passing_threshold": 5,
+    "scale": "1 to 5",
+    "below_threshold_action": "rerun_current_phase",
+    "review_format": ["what_was_correct", "score_1_to_5", "expected_for_perfect_result"]
+  },
+  "job_level_framework": {
+    "levels": [
+      { "id": 0, "name": "Novice", "titles": ["Intern"], "salary_percentile": "floor" },
+      { "id": 1, "name": "Entry", "titles": ["Junior", "Associate", "Graduate"], "salary_percentile": "floor_to_midpoint" },
+      { "id": 2, "name": "Mid", "titles": ["[Role]", "Associate with full responsibility"], "salary_percentile": "floor_to_midpoint" },
+      { "id": 3, "name": "Senior", "titles": ["Senior", "Team Lead", "Staff"], "salary_percentile": "midpoint_to_75th" },
+      { "id": 4, "name": "Manager", "titles": ["Manager", "Principal", "Group Lead"], "salary_percentile": "midpoint_to_75th" },
+      { "id": 5, "name": "Director", "titles": ["Director", "Senior Director"], "salary_percentile": "75th_to_stretch" },
+      { "id": 6, "name": "Head_VP", "titles": ["Head of", "VP", "Vice President"], "salary_percentile": "75th_to_stretch" },
+      { "id": 7, "name": "Executive", "titles": ["C-Suite", "CPO", "CTO", "CEO", "MD", "President"], "salary_percentile": "stretch_custom_negotiation" }
+    ],
+    "startup_calibration": "subtract_one_level_from_title_at_companies_under_50_people",
+    "detection_rule": "read_scope_and_responsibilities_not_title_alone"
+  },
+  "workflow": {
+    "phase_count": 8,
+    "first_use": "run_initialisation_flow_before_phase_0_if_no_profile_exists",
+    "phases": [
+      {
+        "id": 0,
+        "name": "Job Discovery",
+        "trigger": "user_requests_job_search_or_post_submission",
+        "cold_start": "prompt_for_role_type_seniority_sector_geography_if_no_anchor",
+        "read_profile_fields": ["TARGET_ROLE_TYPES", "TARGET_SENIORITY_LEVEL", "TARGET_SECTORS", "PREFERRED_CITIES", "HARD_EXCLUSION_GEOGRAPHIES"],
+        "platforms": ["LinkedIn", "Indeed", "Wellfound", "Relocate.me", "EuroTechJobs", "Greenhouse", "Lever", "BreezyHR", "WelcomeToTheJungle", "RemoteOK"],
+        "search_passes": 2,
+        "output_columns": ["Rank", "Company", "Role", "Level", "Location", "Relocation", "Fit Signal", "URL"],
+        "rank_by": ["relocation_offered", "level_match", "role_title_match", "sector_alignment"],
+        "cap": 20,
+        "flag_top": 5,
+        "scoring_gate": true,
+        "required_score": 5
+      },
+      {
+        "id": 1,
+        "name": "Company Intelligence",
+        "trigger": "user_selects_role_or_provides_url",
+        "operations_parallel": ["fetch_job_posting", "fetch_application_form", "identify_hiring_manager", "research_company_and_product"],
+        "form_fetch": {
+          "breezy_hr": "append_slash_apply_flag_template_variables",
+          "greenhouse": "embed_url_or_append_flag_custom_questions",
+          "lever": "append_slash_apply",
+          "linkedin": "flag_paste_manually",
+          "indeed": "flag_paste_manually",
+          "fallback": "flag_all_template_variables_to_user"
+        },
+        "output": "company_intelligence_brief",
+        "scoring_gate": true,
+        "required_score": 5
+      },
+      {
+        "id": 2,
+        "name": "Fit Analysis",
+        "trigger": "phase_1_score_5",
+        "gate": "no_application_text_before_verdict",
+        "steps": [
+          "detect_role_level_from_jd_scope",
+          "compare_detected_level_to_profile_target",
+          "extract_mandatory_and_preferred_requirements",
+          "two_column_evidence_mapping",
+          "compensating_evidence_mapping",
+          "verdict_assignment",
+          "session_gap_statement_to_log_only"
+        ],
+        "verdicts": {
+          "clean_fit": "all_mandatory_covered",
+          "honest_stretch": "one_or_two_mandatory_gaps_with_compensating_evidence",
+          "mismatch": "two_or_more_mandatory_gaps_no_compensation_halt"
+        },
+        "mismatch_action": "halt_inform_user_do_not_produce",
+        "scoring_gate": true,
+        "required_score": 5
+      },
+      {
+        "id": 3,
+        "name": "Clarifying Intake",
+        "trigger": "phase_2_score_5",
+        "presentation": "single_block_no_dripping",
+        "critical_gates": ["portfolio_url", "salary_anchor_or_research", "availability", "relocation", "custom_questions"],
+        "important_gates": ["specific_project", "language_level", "product_trial_observation"],
+        "salary_research": {
+          "year": "current_year_dynamic",
+          "sources": ["Glassdoor", "Handpicked", "Levels.fyi"],
+          "level_adjustment": "apply_level_to_percentile_mapping",
+          "output": "floor_target_stretch_gross_plus_net",
+          "form_entry": "single_gross_figure",
+          "fractional": "annual_div_220_times_1.4",
+          "multi_currency": "store_separately_flag_exchange_risk_do_not_convert"
+        },
+        "scoring_gate": true,
+        "required_score": 5
+      },
+      {
+        "id": 4,
+        "name": "Application Package",
+        "trigger": "all_critical_gates_phase_3_cleared",
+        "deliverables": ["standard_form_fields", "experience_summary", "cover_letter", "custom_question_answers"],
+        "cover_letter": {
+          "templates": "references/cover-letter-templates.md",
+          "address_to": "named_person_from_phase_1_title_fallback_never_to_whom_it_may_concern",
+          "structure": ["opening_why_role_why_company", "evidence_company_tool_metric", "product_observation", "gap_acknowledgment_if_stretch", "strong_action_close"],
+          "prohibited_closes": ["I look forward to your reply", "Please call me at your earliest convenience"],
+          "word_limits": { "text_box": 450, "online_email": 250, "document": 500 },
+          "level_tone": {
+            "0_to_2": "enthusiastic_learning_focused",
+            "3_to_4": "direct_delivery_focused",
+            "5_to_7": "strategic_organisational_outcome_at_scale"
+          }
+        },
+        "route_through": "phase_5",
+        "scoring_gate": true,
+        "required_score": 5
+      },
+      {
+        "id": 5,
+        "name": "Writing Quality Pass",
+        "trigger": "phase_4_output_ready",
+        "passes": 2,
+        "present": "final_only_never_draft",
+        "pattern_families": [
+          "significance_inflation",
+          "promotional_language",
+          "structural_ai_patterns",
+          "voice_and_attribution",
+          "technical_ai_tells"
+        ],
+        "pass_2_audit": "ask_what_still_makes_this_ai_generated_then_fix",
+        "scoring_gate": true,
+        "required_score": 5
+      },
+      {
+        "id": 6,
+        "name": "Governance Gate",
+        "trigger": "phase_5_score_5",
+        "checks": [
+          "third_party_completable_without_questions",
+          "all_claims_traceable_to_profile_or_phase_3",
+          "salary_single_gross_figure_correct_currency",
+          "gap_acknowledged_in_cover_letter_and_why_suitable",
+          "all_placeholder_tokens_resolved_or_flagged",
+          "cover_letter_within_word_limit",
+          "portfolio_field_is_valid_url",
+          "salary_field_is_numeric_not_prose"
+        ],
+        "failure_action": "fix_before_presenting",
+        "scoring_gate": true,
+        "required_score": 5
+      },
+      {
+        "id": 7,
+        "name": "Post-Submission Loop",
+        "trigger": "user_confirms_submission_withdrawal_or_rejection",
+        "branches": {
+          "a_submission": "anchor_on_submitted_role_return_to_phase_0_present_next_5",
+          "b_withdrawal": "log_withdrawn_ask_reason_refine_next_discovery",
+          "c_rejection": "log_outcome_identify_gap_ask_recalibration_preference"
+        },
+        "post_session": ["update_excluded_companies_log", "update_salary_anchors_if_offer_data"],
+        "scoring_gate": true,
+        "required_score": 5
+      }
+    ]
+  },
+  "invariants": [
+    "never_produce_application_text_before_phase_3_critical_gates",
+    "never_fabricate_metrics_or_tool_names",
+    "never_suggest_salary_without_research",
+    "never_recommend_hard_excluded_geographies",
+    "never_present_writing_quality_draft",
+    "never_hide_mismatch_verdict",
+    "never_use_to_whom_it_may_concern",
+    "never_use_passive_close",
+    "always_address_cover_letter_to_named_person",
+    "always_run_level_framework_before_salary_research",
+    "always_update_excluded_companies_log_after_discovery",
+    "always_update_salary_anchors_after_offer_data"
+  ],
+  "platform_notes": {
+    "claude_ai": "sequential_all_phases_wait_for_scoring_gate",
+    "claude_cowork": "phases_0_1_salary_research_parallel_phases_2_to_7_sequential",
+    "combined": "phases_0_1_cowork_then_transfer_brief_phases_2_to_7_claude_ai",
+    "manus": "paste_this_file_as_session_instruction_source"
+  },
+  "automation_layer": {
+    "version": "2.0.0",
+    "added": "2026-04-24",
+    "principle": "additive_only_v1_workflow_unchanged",
+    "capability_detection": {
+      "run_at": "session_start_before_phase_0",
+      "probe_tools": [
+        "web_search", "web_fetch", "bash_tool", "create_file", "present_files"
+      ],
+      "probe_mcps": [
+        "BrowserBase", "Playwright", "Gmail", "Outlook_MS365",
+        "Google_Drive", "OneDrive", "Google_Calendar"
+      ],
+      "output": "capability_map_presented_to_user",
+      "proceed_condition": "user_acknowledges_map"
+    },
+    "consent_tiers": {
+      "tier_1": {
+        "label": "Read-only",
+        "examples": ["job_board_fetch", "form_parse", "company_research"],
+        "gate": "none_phase_scoring_gate_sufficient",
+        "approval_required": false
+      },
+      "tier_2": {
+        "label": "Reversible write",
+        "examples": ["docx_creation", "drive_save", "calendar_event"],
+        "gate": "preview_then_APPROVE_ACTION_NAME",
+        "approval_required": true,
+        "approval_format": "APPROVE [ACTION_NAME]",
+        "valid_responses": ["APPROVE CREATE", "APPROVE SAVE", "APPROVE CALENDAR"],
+        "invalid_responses": ["yes", "ok", "5", "score_of_5", "any_paraphrase"],
+        "note": "approval_and_scoring_are_separate_systems_never_conflate"
+      },
+      "tier_3": {
+        "label": "Irreversible write",
+        "examples": ["application_submit", "email_send", "form_field_commit"],
+        "gate": "full_consent_gate_with_data_preview",
+        "approval_required": true,
+        "approval_format": "APPROVE [SPECIFIC_PHRASE]",
+        "valid_responses": ["APPROVE SUBMIT", "APPROVE SEND", "APPROVE FILL"],
+        "invalid_responses": ["yes", "ok", "5", "score_of_5", "any_paraphrase"],
+        "cancel_responses": ["CANCEL", "anything_else"],
+        "note": "exact_match_required_never_execute_on_partial_match"
+      }
+    },
+    "browser_automation": {
+      "primary": "BrowserBase_MCP",
+      "secondary": "Playwright_MCP",
+      "secondary_requires_disclosure": true,
+      "disclosure_trigger": "first_playwright_use_per_session",
+      "fallback": "pre_staged_answers_manual_paste",
+      "credential_policy": "session_only_never_stored_never_persisted",
+      "failure_action": "stop_report_switch_to_manual_never_auto_resubmit",
+      "high_bot_detection_platforms": ["LinkedIn", "Indeed"],
+      "reliable_platforms": ["Greenhouse", "Lever", "BreezyHR", "Workday_varies"]
+    },
+    "email_selection": {
+      "policy": "always_ask_never_assume_never_hardcode",
+      "session_memory": "store_SESSION_EMAIL_CHOICE_for_current_session_only",
+      "cross_session": "ask_fresh_each_session",
+      "prompt_format": "show_active_mcps_show_last_used_ask_which_or_switch",
+      "available_providers": ["Gmail_MCP", "Outlook_MS365_MCP"]
+    },
+    "document_storage": {
+      "step_1": "always_present_local_download_first_via_present_files",
+      "step_2": "after_local_offer_ask_cloud_save_yes_or_no",
+      "step_3": "if_yes_present_active_cloud_providers_ask_which",
+      "step_4": "suggest_folder_path_from_session_context_confirm_before_save",
+      "cloud_save_tier": "tier_2",
+      "approval_phrase": "APPROVE SAVE",
+      "never": "save_to_cloud_without_explicit_consent"
+    },
+    "automation_recommendations": {
+      "max_per_phase": 2,
+      "always_show_manual_fallback": true,
+      "scope_lock": "automation_registry_json_only",
+      "inactive_recommendation": "show_mcp_name_and_how_to_connect",
+      "phase_trigger_points": {
+        "phase_0": ["fetch_top5_full_postings", "job_board_dashboard_if_auth_available"],
+        "phase_1": ["fetch_full_application_form", "browser_form_access_if_available"],
+        "phase_3": ["draft_send_hiring_manager_email_if_needed"],
+        "phase_4": ["create_docx_cover_letter", "local_download_full_package"],
+        "phase_6": ["browser_form_fill_after_governance_pass", "session_record_document"],
+        "phase_7": ["calendar_followup_reminder", "confirmation_email_to_self"]
+      }
+    },
+    "platform_routing": {
+      "claude_ai": {
+        "tier_1": "inline_sequential",
+        "tier_2": "pause_consent_then_execute_sequential",
+        "tier_3": "pause_full_consent_gate_then_execute_sequential"
+      },
+      "claude_cowork": {
+        "tier_1": "parallel_subagents_phases_0_and_1",
+        "tier_2": "sequential_main_thread_after_consent",
+        "tier_3": "sequential_main_thread_after_full_consent_never_subagent"
+      },
+      "manus": {
+        "tier_1": "inline",
+        "tier_2": "pause_text_prompt_consent_then_execute",
+        "tier_3": "pause_full_text_consent_gate_then_execute"
+      }
+    },
+    "invariants": [
+      "never_trigger_automation_outside_automation_registry_scope",
+      "never_conflate_approval_with_scoring",
+      "never_store_credentials_across_sessions",
+      "never_auto_resubmit_after_browser_failure",
+      "never_save_to_cloud_without_tier_2_consent",
+      "never_send_email_without_tier_3_approval",
+      "never_submit_application_without_tier_3_approval",
+      "never_assume_email_provider_always_ask",
+      "always_present_local_download_before_cloud_save_option",
+      "always_show_capability_map_at_session_start",
+      "always_provide_manual_fallback_alongside_automation_option",
+      "always_scope_recommendations_to_automation_registry"
+    ]
+  }
+}
