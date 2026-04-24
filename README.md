@@ -16,7 +16,7 @@ explicit consent at every step.
 
 ## Quick Start
 
-1. [Download the latest ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases)
+1. [Download JAE-v2.0-Generic-Universal.zip from the v2.0.0 Release](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
 2. Fill in your details in `references/applicant-profile-template.md`
 3. In Claude: go to **Customize → Skills → Create Skill → Upload ZIP** — the skill is then available across all your conversations
 4. Say: *"Find me jobs similar to [ROLE] in [CITY]"* — the engine guides you from there
@@ -291,7 +291,7 @@ job-application-engine/
 This is the correct installation method. It makes the skill available across every
 conversation and gives it full agentic execution capability.
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
 2. In Claude, click your profile icon → **Customize**
 3. Go to **Skills** → **Create Skill**
 4. Upload the ZIP file directly
@@ -335,7 +335,7 @@ direct review at every step.
 CoWork supports native skill installation. Install once; the skill is available
 across all CoWork projects and agents.
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
 2. In CoWork, go to **Customize → Skills → Create Skill**
 3. Upload the ZIP directly
 4. The skill is now available to all agents in your CoWork environment
@@ -343,7 +343,7 @@ across all CoWork projects and agents.
 
 **Alternative — Workspace file upload** *(if Skills not available on your CoWork tier)*
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
 2. Open Claude CoWork → **New Project** → **Upload**
 3. Upload all 20 files individually, preserving the `references/` folder hierarchy
 4. CoWork reads `rules.json` as the workflow instruction source
@@ -391,7 +391,7 @@ upload method below as the primary approach.
 
 **Primary — Upload files + rules.json as session instruction source**
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
 2. Extract the ZIP locally
 3. Upload all extracted files into your Manus project workspace
 4. Manus reads `rules.json` as the session instruction source governing the full
