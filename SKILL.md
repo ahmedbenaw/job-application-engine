@@ -1,6 +1,6 @@
 ---
 name: job-application-engine
-version: 2.0.1
+version: 2.0.2
 edition: generic-universal
 author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect
 description: |
@@ -22,6 +22,12 @@ compatibility:
   platforms: [Claude.ai, Claude CoWork, Manus]
   external_dependencies: none
 changelog:
+  - version: 2.0.2
+    date: 2026-04-25
+    notes: |
+      README workflow diagram A0 subgraph aligned with SKILL.md step order (STEP 1→1C→2→2A→3→4);
+      repository structure blurb (13 automations A01–A13); changelog footer and release links v2.0.2;
+      Capability Map row labels Google Drive/OneDrive explicitly.
   - version: 2.0.1
     date: 2026-04-25
     notes: |
@@ -1079,7 +1085,7 @@ Print the map using this exact format. Replace [STATUS] with one of:
 ║  Application submission            ║ BrowserBase MCP  ║ [STATUS] ║ Manual   ║
 ║  Document creation (DOCX/PDF)      ║ bash_tool        ║ [STATUS] ║ —        ║
 ║  File download (local)             ║ present_files    ║ [STATUS] ║ —        ║
-║  Cloud save (Drive/OneDrive)       ║ Drive/OneDrive   ║ [STATUS] ║ Ask user ║
+║  Cloud save (Drive/OneDrive)       ║ Google Drive/OneDrive   ║ [STATUS] ║ Ask user ║
 ║  Email draft & send                ║ Gmail/Outlook    ║ [STATUS] ║ Manual   ║
 ║  Calendar reminders                ║ Calendar MCP     ║ [STATUS] ║ Manual   ║
 ╠════════════════════════════════════╬══════════════════╬══════════╬══════════╣

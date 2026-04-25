@@ -1,5 +1,5 @@
 # Job Application Engine
-**Version 2.0.1 — Generic Universal Edition**
+**Version 2.0.2 — Generic Universal Edition**
 
 **Author: _Ahmed AW (Ben Zayed) | Product Leader, Builder & Venture Architect_**
 
@@ -18,7 +18,7 @@ recommends available options.
 
 ## Quick Start
 
-1. [Download `JAE-v2.0.1-Generic-Universal-2026-04-25.zip` from the v2.0.1 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1)
+1. [Download `JAE-v2.0.2-Generic-Universal-2026-04-25.zip` from the v2.0.2 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2)
 2. Install the skill: **Claude.ai / Claude CoWork** — **Customize → Skills → Create Skill → Upload ZIP**. **Manus** — **Skills → + Add → Upload** or **Import from GitHub** (see [Platform Setup](#platform-setup)).
 3. Choose your entry mode:
 
@@ -99,20 +99,19 @@ flowchart TB
   %% ── SESSION START ─────────────────────────────────────
   START([" 🟢 Session Start "]):::entry
 
-  %% ── A0 — CAPABILITY DETECTION ────────────────────────
+  %% ── A0 — CAPABILITY DETECTION (order matches SKILL.md A0) ──
   subgraph CAP["  A0 · Capability Detection"]
-    direction LR
-    A0_PW["Playwright\nDisclosure"]:::step
-    A0_CONF{Capability Map\nConfirmed?}:::gate
-    A0_PT["Probe Tools &\nConnections"]:::step
-    A0_CM["Build\nCapability Map"]:::step
-    A0_JB["Job Board &\nATS MCP Probe"]:::step
-    A0_REC["Recommend\nMCPs if none found"]:::autonode
-    A0_PW --> A0_CONF
-    A0_CONF -- No --> A0_PW
-    A0_CONF -- Yes --> A0_PT --> A0_CM --> A0_JB --> A0_REC
+    direction TB
+    A0_PT["STEP 1 · Probe core tools\n+ Job Board MCPs (1B)"]:::step
+    A0_REC["STEP 1C · MCP discovery\n(if all JB/ATS MCPs inactive)"]:::autonode
+    A0_CM["STEP 2 · Build & present\nCapability Map"]:::step
+    A0_2A["STEP 2A · Mandatory artifact\nfallback if files/shell inactive"]:::autonode
+    A0_BD["STEP 3 · Browser path note\nBrowserBase / Playwright / manual"]:::step
+    A0_OK{STEP 4 · Map OK ·\nShall we begin?}:::gate
+    A0_PT --> A0_REC --> A0_CM --> A0_2A --> A0_BD --> A0_OK
+    A0_OK -- No / revise --> A0_CM
   end
-  START --> CAP
+  START --> A0_PT
 
   %% ── SESSION ENTRY GATE ────────────────────────────────
   subgraph SEG["  Session Entry Gate"]
@@ -123,7 +122,7 @@ flowchart TB
     SEG_D -- "Mode A" --> SEG_A
     SEG_D -- "Mode B\nCV + Job URL" --> SEG_B
   end
-  CAP --> SEG
+  A0_OK -- Yes --> SEG_D
 
   %% ── PHASE 0 — JOB DISCOVERY (Mode A only) ────────────
   subgraph PH0["  P0 · Job Discovery  ·  Mode A only"]
@@ -280,7 +279,6 @@ flowchart TB
 | 🟣 Purple rectangle | File storage — local download always before cloud save |
 | 🔴 Light-red rectangle | Irreversible action — `APPROVE SUBMIT` and `APPROVE FILL` |
 | `- -` Dashed arrow | Loop back to Phase 0 after successful submission |
-| `- -` Dashed arrow | Loop back to Phase 0 after successful submission |
 
 ---
 
@@ -301,14 +299,14 @@ so the system adapts to each role without starting from scratch.
 job-application-engine/
 ├── README.md                                ← This file + workflow diagram
 ├── LICENSE                                  ← MIT licence
-├── CHANGELOG.md                             ← Version history (v1.0 + v2.0)
+├── CHANGELOG.md                             ← Version history (v1.0 · v2.x)
 ├── .gitignore
 ├── SKILL.md                                 ← Main skill file
 │                                               8-phase engine + automation layer
 ├── rules.json                               ← Machine-readable workflow rules
 │                                               + automation layer bindings
-├── automation-registry.json                 ← All 11 permitted automations
-│                                               (A01–A11) · scope-locked
+├── automation-registry.json                 ← All 13 declared automations
+│                                               (A01–A13) · scope-locked
 └── references/
     ├── applicant-profile-template.md        ← Central source of truth · fill first
     ├── cover-letter-templates.md            ← Both canonical templates
@@ -347,7 +345,7 @@ job-application-engine/
 
 This method makes the skill available across conversations that support Skills.
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2)
 2. In Claude (web): profile → **Customize** → **Skills** → **Create Skill** → upload the ZIP  
    On **mobile**, use the path your Claude app exposes for **Skills**; if Skills are not exposed, use **Project Knowledge** fallback below.
 3. The skill is active where Skills apply — no separate project is required for that mode.
@@ -380,14 +378,14 @@ Upload the same file set from the clone into Project Knowledge as above.
 
 **Primary — Agent Skills install**
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2)
 2. **Customize → Skills → Create Skill** → upload the ZIP (labels per current CoWork UI).
 3. The skill is available to CoWork agents that load Skills.
 4. Open a **New Project** and run the workflow. **Parallelism** for Phases 0, 1, and Phase 3 salary research is **defined in this skill** (`SKILL.md`, `rules.json`); CoWork **allows** parallel Tier-1 work — the product does not auto-route phases without those rules.
 
 **Alternative — Workspace file upload** *(if Skills are unavailable on your tier)*
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2)
 2. CoWork → **New Project** → **Upload**
 3. Upload **all** files from the extracted ZIP (root files plus the entire `references/` tree — same set `git ls-files` would list from this repo). Preserve folder hierarchy.
 4. CoWork reads `rules.json` as the workflow instruction source.
@@ -428,7 +426,7 @@ Install via **Skills** on both hosts when available. Two patterns — see [docs/
 
 **Primary — Agent Skills (current product)**
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1) *or* use **Import from GitHub** with  
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2) *or* use **Import from GitHub** with  
    `https://github.com/ahmedbenaw/job-application-engine`
 2. In Manus: **Skills** tab → **+ Add** → **Upload a skill** (`.zip` / `.skill`) **or** **Import from GitHub** (public repo URL above).
 
@@ -631,4 +629,4 @@ MIT. See `LICENSE` for full terms.
 
 ## Changelog
 
-See `CHANGELOG.md` for the full version history. Current version: **2.0.0**.
+See `CHANGELOG.md` for the full version history. Current version: **2.0.2**.

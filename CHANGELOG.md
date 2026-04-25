@@ -5,6 +5,26 @@ Format: Most recent changes listed first within each version.
 
 ---
 
+## [2.0.2] — 2026-04-25 | README workflow diagram + install metadata
+
+**Updated — README.md**
+
+- **Workflow diagram:** A0 subgraph reordered to match `SKILL.md` A0 — STEP 1 (probe + job board MCPs 1B) → STEP 1C (MCP discovery when all inactive) → STEP 2 (Capability Map) → **STEP 2A** (mandatory artifact fallback) → STEP 3 (browser path note) → STEP 4 (“Shall we begin?”).
+- **Repository structure** tree: **13** declared automations **A01–A13** (was incorrectly “11 / A11”).
+- **Changelog** footer: current version **2.0.2** (was incorrectly 2.0.0).
+- **Quick Start / Platform Setup:** download and release links point to **v2.0.2** and asset `JAE-v2.0.2-Generic-Universal-2026-04-25.zip`.
+- Removed duplicate legend table row.
+
+**Updated — SKILL.md**
+
+- `version` **2.0.2**; Capability Map template row: **Google Drive / OneDrive** (explicit vendor naming).
+
+**Updated — rules.json · automation-registry.json**
+
+- `skill.version` / `registry_version` **2.0.2**.
+
+---
+
 ## [2.0.1] — 2026-04-25 | Platform accuracy, mandatory exclusions, artifact fallback
 
 **Added — Canonical documentation**
@@ -39,7 +59,7 @@ Format: Most recent changes listed first within each version.
 
 ---
 
-## [2.0.0] — 2026-04-24 | Baseline 2.0.0 — patches below are additive (superseded for install docs by 2.0.1)
+## [2.0.0] — 2026-04-24 | Baseline 2.0.0 — patches below are additive (superseded for install docs by 2.0.2)
 
 ---
 

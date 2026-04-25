@@ -1,5 +1,5 @@
 {
-  "registry_version": "2.0.1",
+  "registry_version": "2.0.2",
   "created": "2026-04-24",
   "author": "Ahmed Ossama | Product Leader, Builder & Venture Management Architect",
   "scope_rule": "Only automations declared in this registry may be triggered by the skill. No automation may be improvised or added during a session. Scope is locked at this file.",
