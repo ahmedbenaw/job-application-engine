@@ -16,4 +16,4 @@ Same as v2.0.1: **Claude.ai / CoWork** — Skills → upload ZIP. **Manus** — 
 
 Download **`JAE-v2.0.2-Generic-Universal-2026-04-25.zip`** from Assets (flat repo root for Skills upload).
 
-After upload, confirm **SHA256** on the GitHub release asset row matches your verification command (git archive digest may differ from GitHub’s computed digest).
+**SHA256 (git archive before upload):** `7500effefd2fb07e9d29100f24ccbe9c0b6843e8edb966df8d3115b4fea5f837` — verify against the digest shown on the release asset if they differ.
