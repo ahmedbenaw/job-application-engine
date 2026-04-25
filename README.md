@@ -1,6 +1,7 @@
 # Job Application Engine
 **Version 2.0.0 — Generic Universal Edition**
-**Author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect**
+
+**Author: _Ahmed AW (Ben Zayed) | Product Leader, Builder & Venture Architect_**
 
 An end-to-end AI-powered job application system for Claude, Claude CoWork, and Manus.
 Supports two session entry modes: Mode A discovers matching roles across 10 platforms;
