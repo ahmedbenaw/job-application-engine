@@ -1,73 +1,192 @@
 # Changelog — Job Application Engine
 
 All notable changes to this project are documented in this file.
-Format: [Version] — Date | Summary of changes
+Format: Most recent changes listed first within each version.
 
 ---
 
-## [2.0.0] — 2026-04-24 | Automation Layer Added — Additive to v1.0
+## [2.0.0] — 2026-04-24 | Current version — all patches below are additive
+
+---
+
+### Patch — Job Board MCP Detection + Diagram (latest)
+
+**Added — Job Board and ATS Platform MCP Detection (SKILL.md, A0)**
+
+STEP 1B added to A0: dedicated probe for 10 job board and ATS platform MCPs —
+LinkedIn, Indeed, Greenhouse, Lever, Workday, Ashby, Wellfound, SmartRecruiters,
+Breezy HR, Recruitee. Each reported as ACTIVE / LIMITED / INACTIVE in the
+Capability Map, which now has a dedicated JOB BOARD & ATS PLATFORM MCPs section.
+
+STEP 1C added: MCP Discovery Search fires automatically when all job board MCPs
+are INACTIVE. Runs three targeted web_search queries to find available MCPs on
+GitHub and npm. Presents results as RECOMMENDED CONNECTIONS below the Capability
+Map. Notes clearly that web_search and web_fetch provide full discovery capability
+without these MCPs — job board MCPs unlock authenticated features (saved jobs,
+Easy Apply, application status tracking) as an enhancement, not a requirement.
+
+STEP 4 updated: prompt changed from "Shall we begin Phase 0?" to "Shall we begin?"
+to handle both Mode A and Mode B entry correctly.
+
+**Added — Automations A12 and A13 (automation-registry.json)**
+
+A12 — Job Board MCP Authenticated Search: Tier 1 auto-execute. Uses an active job
+board or ATS MCP for authenticated searches, saved jobs, Easy Apply. Fires only when
+at least one job board MCP is ACTIVE. Fallback: web_search and web_fetch.
+
+A13 — Job Board MCP Discovery Search: Tier 1 auto-execute. Runs in A0 STEP 1C when
+all job board MCPs are INACTIVE. Search and recommendation only — no install or
+connection. User action required to connect any recommended MCP.
+
+Out-of-scope additions: auto-installing MCPs; using job board MCPs for submission
+(submission always routes through A05 — BrowserBase/Playwright).
+
+**Updated — Workflow Diagram (README.md)**
+
+Removed `%%{init: {'theme': 'dark', ...}}%%`. Diagram renders in GitHub's default
+light mode. Changed `flowchart LR` to `flowchart TB` — phases stack vertically,
+each displaying as a horizontal row internally. All classDef fills converted to
+light-mode colors. Session Entry Gate subgraph added. Job Board MCP Probe and
+Recommend MCPs nodes added to A0. Job Board MCP node added to Phase 0. Mode B
+direct path from Session Entry Gate to Phase 1 shown explicitly.
+
+---
+
+### Patch — Session Entry Gate (Mode A / Mode B)
+
+**Problem resolved**
+
+The skill had a single linear entry path (discovery only). Users arriving with a
+CV and a job URL were forced through Phase 0 discovery even when they already had
+a specific role in mind. The cold-start branch asked "what role and geography?" even
+when a job URL was already present in the session.
+
+**Added — Session Entry Gate (SKILL.md)**
+
+A routing gate runs after A0 and before any phase. Detects session mode from signals
+(uploaded files, URLs, message content). Routes Mode A to Phase 0. Routes Mode B
+directly to Phase 1 with Phase 0 marked Skipped. Presents both options explicitly
+when the mode cannot be determined from signals alone.
+
+Mode A — Job Discovery: user states a target role, sector, geography, or seniority.
+Proceeds to Phase 0. All subsequent phases run as before.
+
+Mode B — Direct Application: user provides a CV and job URL or JD text. Phase 0
+skipped entirely. CV fed into First-Use Protocol Step 0 extraction. Job URL fed into
+Phase 1 Company Intelligence simultaneously. Phases 1–7 run identically to Mode A.
+
+**Added — Mode B intake prompt and checklist display (SKILL.md)**
+
+Structured prompt requesting CV and job URL if either is absent in Mode B. Phase 0
+shows ✅ Skipped with "Mode B" label in the session status board.
+
+**Updated — Phase 0 (SKILL.md)**
+
+Section opens with "MODE A ONLY" constraint. Cold-start branch explicitly restricted
+to Mode A — does not fire when a job URL is already present.
+
+**Updated — SKILL.md description block and body title**
+
+Both session modes documented as triggers. Stale "v1.0" label removed from body title.
+
+**Updated — rules.json**
+
+session_entry_gate block added with mode_a and mode_b signal arrays, entry_phase
+routing, parallel_intake spec for Mode B, and ambiguous_signal handling.
+
+**Updated — README.md Quick Start**
+
+Shows both modes with concrete example triggers and CV upload instruction for Mode B.
+
+---
+
+### Patch — Document-Aware First-Use Setup Protocol + Per-Application Profile Updates
+
+**Problem resolved**
+
+The First-Use Protocol presented 25 questions with no awareness of uploaded CVs,
+LinkedIn URLs, or other documents. Users with a resume in hand were asked to re-type
+information that already existed in structured form.
+
+**Rewritten — First-Use Setup Protocol (SKILL.md)**
+
+Five steps replace the single 25-question block.
+
+Step 0 — Document and link detection: runs before any question is asked. Detects
+uploaded CVs (PDF, DOCX), LinkedIn URLs, GitHub URLs, portfolio URLs, Behance/Dribbble
+URLs, and inline text descriptions. Extracts all recognisable profile fields from each
+source. Builds a field map: extracted / partial / not found.
+
+Step 1 — Present extraction results: shows what was found for user confirmation.
+User confirms or corrects rather than typing from scratch.
+
+Step 2 — Gap-fill questions: asks only for fields that could not be extracted.
+Minimum zero questions (if CV + LinkedIn URL covered everything), maximum 25.
+
+Step 3 — Profile confirmation and scoring gate: complete profile presented for review.
+Score of 5 required before the workflow begins. Writes to applicant-profile-template.md.
+
+Step 4 — Returning session staleness check: runs at every session start for existing
+profiles. Availability re-confirmed per session. Salary anchors flagged if source date
+older than 6 months. Active engagements re-confirmed.
+
+Step 5 — Per-application profile update protocol: runs at Phase 3 and Phase 7.
+After Phase 3: flags portfolio URL, salary, availability, language level, and tool
+stack differences for APPROVE UPDATE. After Phase 7: logs all outcomes, updates
+salary anchors if offer data received, flags recurring rejection gaps for profile
+review. Mid-session document uploads trigger Step 0 extraction on the new source.
+All profile writes require APPROVE UPDATE (Tier 2).
+
+**Updated — applicant-profile-template.md**
+
+Header updated with HOW THIS PROFILE GETS POPULATED (recommended document sources
+and what is extracted from each) and HOW THIS PROFILE GETS UPDATED (update triggers
+and APPROVE UPDATE requirement).
+
+**Updated — rules.json**
+
+first_use block replaced with structured 5-step object encoding extraction sources,
+stale field rules, and per-application update triggers.
+
+---
+
+## [2.0.0] — 2026-04-24 | Automation Layer — Initial v2.0 release
 
 ### Architecture
-All v1.0 workflow phases, gates, and invariants unchanged. The automation
-layer is purely additive — mapped onto the existing 8-phase structure at
-specific trigger points within each phase.
+All v1.0 workflow phases, gates, and invariants unchanged. The automation layer is
+purely additive — mapped onto the existing 8-phase structure at specific trigger
+points within each phase.
 
 ### Added — Core automation infrastructure
-- Capability Detection Protocol (A0): runs at session start before Phase 0,
-  probes all tools and MCP connections, builds and presents a live Capability
-  Map. User acknowledges before Phase 0 begins.
-- Automation Recommendation Protocol: inline recommendations at 7 phase
-  trigger points (Phases 0, 1, 3, 4, 6, 7). Max 2 recommendations per phase.
-  Always shows manual fallback alongside every automation option.
+- Capability Detection Protocol (A0): runs at session start before any phase begins,
+  probes all tools and MCP connections, builds and presents a live Capability Map.
+  User acknowledges before proceeding.
+- Automation Recommendation Protocol: inline recommendations at 7 phase trigger points
+  (Phases 0, 1, 3, 4, 6, 7). Max 2 per phase. Always shows manual fallback.
   Inactive automation recommendations include MCP connection instructions.
-- Consent Gate Protocol: three tiers — Tier 1 (read-only, auto-execute),
-  Tier 2 (reversible write, APPROVE [ACTION_NAME]), Tier 3 (irreversible
-  write, APPROVE [SPECIFIC_PHRASE]). Approval and scoring are explicitly
-  separate systems and must never be conflated.
-- Browser Automation Protocol: BrowserBase MCP as primary path, Playwright
-  MCP as secondary with user disclosure and complexity explanation for
-  non-technical users. Fallback to pre-staged manual answers when both
-  unavailable. Failure handling stops immediately and switches to manual.
-- Email Selection Protocol: always ask user which email MCP to use, never
-  assume, never hardcode. Store SESSION_EMAIL_CHOICE for current session only.
-  Ask fresh each session.
-- Document Storage Protocol: local download via present_files always first.
-  Cloud save offered separately after local download. User selects provider.
-  Folder path suggested and confirmed before save.
-- Platform-aware execution routing: Tier 1 actions parallel in CoWork,
-  all Tier 2 and Tier 3 actions sequential in main thread on all platforms.
-  Irreversible actions never dispatched to subagents.
+- Consent Gate Protocol: three tiers — Tier 1 (read-only, auto-execute), Tier 2
+  (reversible write, APPROVE [ACTION_NAME]), Tier 3 (irreversible write, APPROVE
+  [SPECIFIC_PHRASE]). Approval and scoring are explicitly separate systems.
+- Browser Automation Protocol: BrowserBase MCP as primary, Playwright MCP as secondary
+  with user disclosure. Fallback to pre-staged manual answers when both unavailable.
+- Email Selection Protocol: always ask user which email MCP to use per session, never
+  assume or hardcode. Store SESSION_EMAIL_CHOICE for current session only.
+- Document Storage Protocol: local download via present_files always first. Cloud save
+  offered separately. User selects provider and confirms folder path before save.
+- Platform-aware execution routing: Tier 1 actions may run parallel in CoWork. All
+  Tier 2 and Tier 3 actions sequential in main thread. Irreversible actions never
+  dispatched to subagents.
 
 ### Added — New files
-- automation-registry.json: 11 declared automations (A01–A11) with scope,
-  tool requirements, consent tier, approval phrase, reversibility, fallback,
-  and boundary conditions. Scope lock — only registered automations may fire.
-- references/automation-playbooks/job-board-access.md: platform-specific
-  fetch strategies for 9 job boards, search query construction, top-5 fetch
-  protocol, exclusion filter application.
-- references/automation-playbooks/application-filling.md: 3-stage protocol
-  (form fetch, browser field fill, submission). Platform strategies, field
-  map construction, BrowserBase/Playwright selection, failure handling,
-  pre-staged manual fallback, Playwright complexity disclosure for
-  non-technical users.
-- references/automation-playbooks/email-actions.md: external email to
-  hiring manager (A08, Tier 3 APPROVE SEND) and confirmation email to self
-  (A11, Tier 2 APPROVE SEND). Email selection protocol, draft construction
-  rules, scope boundary.
-- references/automation-playbooks/document-creation.md: cover letter DOCX
-  (A06), full package document (A07), cloud save (A09). Mandatory local-first
-  storage sequence, provider selection, folder path protocol, naming convention.
+- automation-registry.json: 11 declared automations (A01–A11) with scope, tool
+  requirements, consent tier, approval phrase, reversibility, fallback, and boundary
+  conditions. Scope lock — only registered automations may fire.
+- references/automation-playbooks/job-board-access.md
+- references/automation-playbooks/application-filling.md
+- references/automation-playbooks/email-actions.md
+- references/automation-playbooks/document-creation.md
 
-### Modified — Existing files (additive only)
-- SKILL.md: Automation Layer section appended before Invariants. Six inline
-  modules added: Capability Detection, Automation Recommendations per phase,
-  Consent Gate Protocol, Browser Automation Protocol, Email Selection,
-  Document Storage, Platform-Aware Routing.
-- rules.json: automation_layer block appended. Contains capability_detection,
-  consent_tiers, browser_automation, email_selection, document_storage,
-  automation_recommendations, platform_routing, and automation invariants.
-
-### Automation invariants added
+### Automation invariants
 - Never trigger automation outside automation-registry.json scope
 - Never conflate approval with scoring
 - Never store credentials across sessions
@@ -97,183 +216,22 @@ specific trigger points within each phase.
   verdicts (Clean Fit / Honest Stretch / Mismatch), Mismatch hard halt,
   compensating evidence protocol, session gap statement to log only.
 - Writing Quality module (Phase 5): 25 AI-writing pattern categories across
-  five families — significance inflation, promotional language, structural
-  AI patterns, voice and attribution patterns, technical AI tells. Two-pass
-  internal audit loop. Final version only — draft never presented.
-- Governance Gate module (Phase 6): eight sequential checks covering field
-  completeness, claim traceability, salary format, gap acknowledgment, token
-  resolution, word count, portfolio URL validity, and salary field type.
-- Dynamic Applicant Profile template with full field taxonomy: static fields,
-  dynamic fields (positioning headline, professional summary, tools stack, key
-  evidence catalogue, language proficiency, availability, relocation status,
-  compensation preferences, portfolio assets, sector targeting, target seniority
-  level), salary architecture (multi-market, multi-currency, day rate model,
-  equity fields, offer history log), field dependency map, conflict resolution
-  rules, and per-field review cycles.
-- Both canonical cover letter templates reproduced in full with structural
-  annotations, a mixing guide, level-specific tone adjustments, and ten
-  quality rules enforced at Phases 5 and 6.
-- Salary anchors template with confirmed market entry format, regional
-  take-home reference rates for eight markets, multi-currency handling rules,
-  fractional day rate conversion, and offer history log.
-- Excluded companies and application outcomes log with exclusion protocol and
-  update instructions.
-- Job Level Classification Framework as a standalone reference file.
-- Four skill-instruction reference files: fit-analysis.md, writing-quality.md,
-  governance-gate.md, checklist-templates.md.
-- rules.json: machine-readable workflow encoding compatible with Claude.ai,
-  Claude CoWork, and Manus.
-- README.md: platform-specific setup and usage instructions for Claude.ai,
-  CoWork, combined workflow, and Manus.
-- First-Use Setup Protocol for candidates initialising the profile for the
-  first time.
-- Phase 0 cold-start branch for sessions without a prior anchor role.
-- Phase 1 platform-aware form-fetch strategy with per-platform instructions
-  and fallback for template-variable rendering.
-- Hiring manager identification step in Phase 1 — cover letters always
-  addressed to a named person where one can be found.
-- Phase 7 three-branch post-submission handling: successful submission,
-  withdrawal before submission, rejection after submission.
-- All invariants are structural (no candidate-specific data in the invariants
-  section).
-- MIT licence.
+  five families. Two-pass internal audit loop. Final version only.
+- Governance Gate module (Phase 6): eight sequential checks.
+- Dynamic Applicant Profile template with full field taxonomy, salary architecture,
+  field dependency map, conflict resolution rules, and per-field review cycles.
+- Both canonical cover letter templates with mixing guide, level-specific tone
+  adjustments, and ten quality rules.
+- Salary anchors template, excluded companies log, job level framework.
+- Four skill-instruction reference files.
+- rules.json, README.md, MIT licence.
+- Phase 0 cold-start branch, Phase 1 platform-aware form-fetch, hiring manager
+  identification, Phase 7 three-branch post-submission handling.
 
 ### Architecture decisions
-- All agent logic nativized: no external skill files, agents, or frameworks
-  required. The skill operates as a standalone package.
-- Placeholder tokens ([CANDIDATE_NAME], [COMPANY_A], [ROLE_TITLE], etc.)
-  used throughout alongside fictional Alex M. examples to constrain LLM
-  output and prevent hallucination in unfilled fields.
-- Session log is separate from the Applicant Profile. Gap statements, cover
-  letter drafts, and application outcomes are session outputs — they do not
-  overwrite the candidate's permanent profile data.
-
----
-
-## Job Board MCP Detection + Diagram Update — Additive patch to v2.0.0
-
-### Added — Job Board and ATS Platform MCP Detection (SKILL.md, A0)
-
-STEP 1B added to A0 Capability Detection Protocol. Probes specifically for
-job board and ATS platform MCPs beyond the generic tool and MCP probe:
-LinkedIn MCP, Indeed MCP, Greenhouse MCP, Lever MCP, Workday MCP, Ashby MCP,
-Wellfound MCP, SmartRecruiters MCP, Breezy HR MCP, Recruitee MCP.
-
-Each is checked and reported as ACTIVE, LIMITED, or INACTIVE in the
-Capability Map.
-
-STEP 1C added — MCP Discovery Search. Fires automatically when ALL job board
-and ATS MCPs are INACTIVE. Runs three targeted web_search queries to find
-currently available job board and ATS MCPs on GitHub and npm. Presents
-results as a RECOMMENDED CONNECTIONS block below the Capability Map. Notes
-clearly that web_search and web_fetch provide full discovery capability
-without these MCPs — they unlock authenticated features (saved jobs, easy
-apply, application status tracking) as an enhancement, not a requirement.
-
-Capability Map expanded with a dedicated JOB BOARD & ATS PLATFORM MCPs
-section showing status for each known platform MCP.
-
-STEP 4 updated: session start prompt changed from "Shall we begin Phase 0?"
-to "Shall we begin?" to correctly handle both Mode A and Mode B entry points.
-
-### Added — Automations A12 and A13 (automation-registry.json)
-
-A12 — Job Board MCP Authenticated Search: Tier 1 (auto-execute). Uses an
-active job board or ATS MCP to perform authenticated searches, access saved
-jobs, retrieve application status, or trigger Easy Apply flows. Fires only
-when at least one job board MCP is ACTIVE. Fallback: web_search and
-web_fetch for all discovery actions.
-
-A13 — Job Board MCP Discovery Search: Tier 1 (auto-execute). Runs
-automatically in A0 STEP 1C when all job board MCPs are INACTIVE. Searches
-for available MCPs and presents recommendations. Does not install or connect
-any MCP — user action required.
-
-Out-of-scope additions: installing or auto-connecting MCPs without user
-action; using job board MCPs for submission (submission always uses A05).
-
-### Updated — Workflow Diagram (README.md)
-
-Removed `%%{init: {'theme': 'dark', ...}}%%` directive entirely. Diagram
-now renders in GitHub's default light mode without forced theming.
-
-Changed outer flowchart direction from LR (left-to-right) to TB
-(top-to-bottom). All phase subgraphs remain direction LR internally.
-Result: phases stack vertically, each displaying as a horizontal row.
-
-All classDef color fills replaced with light-mode equivalents:
-dark fills (e.g. #134e4a, #14532d, #7f1d1d) replaced with light fills
-(#e0f2fe, #dcfce7, #fee2e2) with matching dark text and colored borders.
-
-Added Session Entry Gate subgraph to the diagram between A0 and Phase 0,
-showing Mode A and Mode B routing.
-
-Added Job Board MCP Probe and Recommend MCPs nodes to A0 subgraph.
-
-Added Job Board MCP node to Phase 0 subgraph.
-
-Mode B direct path from Session Entry Gate to Phase 1 shown explicitly.
-
----
-
-### Problem resolved
-The skill previously had a single linear entry path (Mode A — discovery)
-with no mechanism to detect or handle the most common real-world session
-start: a user uploading their CV and providing a specific job URL. Phase 0
-(discovery) would run even when the user already had a role in mind. The
-cold-start branch asked "what role type and geography?" even when a job
-URL was already in the session.
-
-### Added — Session Entry Gate (SKILL.md)
-A routing gate that runs after A0 Capability Detection and before any phase.
-Detects the session mode automatically from session signals. Routes Mode A
-sessions to Phase 0. Routes Mode B sessions directly to Phase 1 with Phase 0
-marked as Skipped.
-
-Mode A — Job Discovery: triggered when no file is uploaded and no job URL
-is provided. User states a target role, sector, geography, or seniority.
-Proceeds to Phase 0 as before.
-
-Mode B — Direct Application: triggered when the user uploads a CV and
-provides a job URL or JD text, or when any of: "apply for this", "I found
-a job", "I want to apply to [role/company]", a job URL, or JD text appears
-in the opening message. Phase 0 is skipped entirely. The CV is fed into
-the First-Use Setup Protocol Step 0 extraction and the job URL is fed into
-Phase 1 Company Intelligence simultaneously. All subsequent phases run
-identically in both modes.
-
-Ambiguous signal handling: if the mode cannot be determined from session
-signals, the skill presents both options explicitly and waits for the user
-to choose before proceeding.
-
-### Added — Mode B intake prompt (SKILL.md)
-Structured prompt requesting CV upload and job URL if either is absent when
-Mode B is detected but one of the two required inputs is missing.
-
-### Added — Mode B checklist display (SKILL.md)
-Phase 0 shows ✅ Skipped with "Mode B" label in Mode B sessions.
-
-### Updated — Phase 0 (SKILL.md)
-Section now opens with "MODE A ONLY" constraint. Cold-start branch updated
-to include explicit instruction not to fire in Mode B sessions.
-
-### Updated — SKILL.md description block
-Now describes both session modes. Trigger language updated to include CV
-upload, job URL paste, and "I want to apply to [company]" as explicit
-triggers alongside the existing discovery-mode triggers.
-
-### Updated — SKILL.md body title
-Removed stale "v1.0" version label from the document body title.
-
-### Updated — rules.json
-session_entry_gate block added with mode_a and mode_b signal arrays,
-entry_phase routing, parallel_intake spec for Mode B, and ambiguous_signal
-handling. Phase 0 trigger updated to session_entry_gate_routes_mode_a and
-mode field set to mode_a_only. cold_start note updated to include Mode A only constraint.
-
-### Updated — README.md Quick Start
-Now shows both entry modes with concrete example phrases and file upload
-instruction for Mode B.
+- All agent logic nativized — no external skill files or frameworks required.
+- Placeholder tokens with fictional Alex M. examples to constrain LLM output.
+- Session log separate from Applicant Profile.
 
 ---
 
@@ -283,7 +241,6 @@ instruction for Mode B.
 - Interview preparation module triggered from Phase 7 Branch A.
 - Offer evaluation module — structured comparison of competing offers.
 - Additional salary market anchors: USA (by state), Canada, Singapore, Australia.
-- Mode B enhancement: structured resume parser returning a scored diff
-  against the JD before Phase 2 runs, surfacing gaps earlier.
-- Multi-role Mode B: user uploads one CV and provides multiple job URLs
-  in one session, skill queues them and runs each through Phases 1–7 sequentially.
+- Mode B enhancement: structured resume parser returning a scored diff against
+  the JD before Phase 2, surfacing gaps earlier.
+- Multi-role Mode B: one CV, multiple job URLs queued and run sequentially.

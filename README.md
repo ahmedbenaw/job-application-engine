@@ -3,11 +3,12 @@
 **Author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect**
 
 An end-to-end AI-powered job application system for Claude, Claude CoWork, and Manus.
-Runs an 8-phase workflow — from multi-platform job discovery through company
-intelligence, adversarial fit analysis, application package production, writing
-quality audit, governance gate, and post-submission tracking — with a native
-automation layer that executes 11 declared actions on the user's behalf with
-explicit consent at every step.
+Supports two session entry modes: Mode A discovers matching roles across 10 platforms;
+Mode B takes a CV and job URL directly and applies without discovery. Runs an 8-phase
+workflow with a native automation layer executing 13 declared actions on the user's
+behalf under a three-tier consent system. Job board and ATS platform MCPs are detected
+automatically at session start — if none are connected, the skill searches online and
+recommends available options.
 
 > **No external agents or frameworks required.** All logic is embedded in the skill
 > files. Drop the ZIP into any supported platform and run.
@@ -37,7 +38,23 @@ The engine runs an 8-phase workflow governed by scoring gates. Every phase produ
 output, presents it for review, and requires a score of 5 out of 5 before advancing.
 A score below 5 triggers a revision loop within the same phase.
 
-**Phase 0 — Job Discovery:** searches 10 platforms in two passes, filters excluded
+**A0 — Capability Detection:** probes all tools and MCP connections at session start,
+including a dedicated scan of 10 job board and ATS platform MCPs (LinkedIn, Indeed,
+Greenhouse, Lever, Workday, Ashby, Wellfound, SmartRecruiters, Breezy HR, Recruitee).
+If none are connected, it searches online and presents recommended MCPs. Presents the
+full Capability Map before any phase begins.
+
+**Session Entry Gate:** detects the session mode automatically from uploaded files,
+URLs, and message content. Routes to Mode A or Mode B without the user needing to
+specify. Presents both options explicitly if the mode is ambiguous.
+
+**Mode A — Job Discovery:** user wants to find matching roles. Proceeds to Phase 0.
+
+**Mode B — Direct Application:** user has a specific role. Upload a CV and paste a
+job URL — Phase 0 is skipped entirely, and the skill runs Phases 1–7 for that role.
+
+**Phase 0 — Job Discovery (Mode A only):** searches 10 platforms in two passes,
+uses active job board MCPs for authenticated access where available, filters excluded
 geographies, ranks results by relocation support and level match, flags the top 5.
 
 **Phase 1 — Company Intelligence:** runs four parallel operations — job posting fetch,
@@ -67,7 +84,7 @@ validity, and salary field type. No package is presented with a known open check
 discovery), withdrawn (logs reason, refines next pass), rejected (identifies gap,
 recalibrates search).
 
-**Automation Layer (v2.0):** 11 declared automations (A01–A11) execute on the
+**Automation Layer (v2.0):** 13 declared automations (A01–A13) execute on the
 user's behalf under a three-tier consent system. Scoring gates evaluate quality.
 Approval gates authorise real-world actions. These are entirely separate systems.
 
@@ -484,7 +501,7 @@ any documents or links you provide before asking a single question manually.
 3. You confirm, correct, or add to the extracted values.
 4. Only for fields that could not be extracted does it ask follow-up questions.
 5. The complete profile is presented for final review and a scoring gate
-   (score of 5 required before Phase 0 begins).
+   (score of 5 required before the workflow begins).
 
 **If you provide a CV and a LinkedIn URL, most fields populate with zero
 manual typing.** If you provide nothing, the skill asks all 25 fields
@@ -519,7 +536,7 @@ review cycle are flagged and re-confirmed before Phase 0 begins.
 Version 2.0 adds a native execution layer beneath the 8-phase workflow. All phases,
 gates, and invariants from v1.0 are unchanged. The automation layer is purely additive.
 
-### 11 Registered Automations
+### 13 Registered Automations
 
 | ID | Automation | Phase | Tier | Approval Phrase |
 |---|---|---|---|---|
@@ -534,6 +551,8 @@ gates, and invariants from v1.0 are unchanged. The automation layer is purely ad
 | A09 | Cloud document save | After A06 / A07 | 2 | `APPROVE SAVE` |
 | A10 | Calendar follow-up reminder | 7 | 2 | `APPROVE CALENDAR` |
 | A11 | Confirmation email to self | 7 | 2 | `APPROVE SEND` |
+| A12 | Job board MCP authenticated search | 0 (when MCP active) | 1 — auto | — |
+| A13 | Job board MCP discovery search | A0 Step 1C | 1 — auto | — |
 
 ### Consent Tiers
 
@@ -550,9 +569,16 @@ Cannot be triggered by a score, "yes", or any paraphrase.
 
 ### Capability Map
 
-At session start, before Phase 0, the skill probes the current environment and
-presents a Capability Map showing every automation as ACTIVE, LIMITED, or INACTIVE,
-with the connection required to enable each inactive one. User acknowledges before proceeding.
+At session start, before any phase begins, the skill probes the current environment
+and presents a Capability Map with two sections: core tools and automations, and a
+dedicated Job Board & ATS Platform MCPs section. Every automation shows as ACTIVE,
+LIMITED, or INACTIVE with the connection required to enable each inactive one.
+
+If all job board and ATS MCPs are inactive, the skill automatically runs A13 —
+a web search that finds currently available job board MCPs on GitHub and npm —
+and presents recommendations below the Capability Map. web_search and web_fetch
+provide full discovery capability without MCPs; job board MCPs are an enhancement
+that unlocks authenticated features (saved jobs, Easy Apply, application status tracking).
 
 ### Browser Automation
 
@@ -585,6 +611,24 @@ simultaneous variants activated by role context.
 ---
 
 ## Key Design Decisions
+
+**Why two session entry modes?** Most documentation assumes the user starts with no
+role in mind. In practice, the most common session start is a user arriving with a
+CV already written and a specific job URL to apply to. Forcing them through a
+10-platform discovery phase they do not need wastes time and creates friction at
+exactly the wrong moment. Mode B exists to meet users where they actually are.
+
+**Why extract profile data from documents instead of asking questions?** A candidate
+who uploads a CV and LinkedIn URL should not be asked to re-type information that
+already exists in structured form. Document extraction first, gap-fill questions
+second, means most profiles populate with minimal manual input. Questions are a
+fallback, not the default.
+
+**Why detect job board MCPs automatically and search for more if none are found?**
+Users do not know which MCPs exist or which would help them. Requiring them to
+research and connect MCPs before the skill is useful creates unnecessary friction.
+The skill surfaces what is available and what is possible — the user decides what
+to connect.
 
 **Why a scoring gate at every phase?** Gates give the system a learning signal between
 phases. Without them, errors compound and the final package is harder to fix.
