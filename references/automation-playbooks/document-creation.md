@@ -17,8 +17,12 @@ Cloud save is always a separate, subsequent action requiring its own consent.
 This sequence is invariant. It must be followed for every document created.
 
 STEP 1 — Create the document using bash_tool and create_file.
-STEP 2 — Present for local download using present_files.
-          Do this immediately after creation, before any other action.
+STEP 2 — Present for local download using present_files when the Capability Map
+          shows **present_files** as ACTIVE. Do this immediately after creation,
+          before any other action. If **present_files** is INACTIVE or blocked,
+          follow **SKILL.md A0 — STEP 2A Mandatory artifact fallback** and
+          `automation-registry.json` → `artifact_policy` (inline full content +
+          user save/copy instructions — never claim a file download ran).
 STEP 3 — After local download is offered, ask:
           "Would you also like to save this to cloud storage?"
 STEP 4 — If yes: present cloud provider options, confirm folder path,

@@ -5,6 +5,40 @@ Format: Most recent changes listed first within each version.
 
 ---
 
+## [2.0.1] — 2026-04-25 | Platform accuracy, mandatory exclusions, artifact fallback
+
+**Added — Canonical documentation**
+
+- `docs/platform-capabilities.md` — Claude.ai, Claude CoWork, Manus, hybrid patterns (`hybrid_chat_review` default, `cowork_end_to_end` secondary).
+- `docs/MANDATORY_EXCLUSIONS.md` — explicit non-features: unattended scheduling, OS-level computer use, no separate “Chrome” primitive (MCP browser paths only), no hidden subagents.
+- `docs/REMEDIATION_INVENTORY.md` — mandatory file/trace list for this pass.
+
+**Updated — README.md (Platform Setup)**
+
+- Manus **Skills-first** (upload `.zip` / `.skill`, Import from GitHub); legacy fallbacks demoted.
+- Claude.ai: in-session agentic wording (not “full agentic” vs CoWork); mobile caveat; bot-heavy routing tip.
+- CoWork: parallelism described as **skill-authored**, not product-“automatic”; file upload wording without brittle file count.
+- Combined: both hybrid patterns named and linked to canonical doc.
+
+**Updated — SKILL.md**
+
+- `version` **2.0.1**; changelog entry; Platform Execution Notes aligned with docs; **A0 STEP 2A** mandatory artifact fallback for `present_files` / `create_file` / `bash_tool`; Manus Skills-first; hybrid labels; Automation Layer header wording.
+
+**Updated — rules.json**
+
+- `skill.version` **2.0.1**; `platform_notes` extended (`hybrid_chat_review`, `cowork_end_to_end`, Manus primary/fallback, `claude_cowork_uses`, doc pointers).
+
+**Updated — automation-registry.json**
+
+- `artifact_policy` with `present_files_inactive_fallback` pointer to SKILL A0 STEP 2A.
+
+**Updated — references**
+
+- `checklist-templates.md`: links to canonical platform and exclusions docs.
+- `document-creation.md`: mandatory fallback when `present_files` unavailable (SKILL A0 STEP 2A + `artifact_policy`).
+
+---
+
 ## [2.0.0] — 2026-04-24 | Current version — all patches below are additive
 
 ---

@@ -2,6 +2,9 @@
 # Version: 1.0.0 | Documents the dynamic checklist system in SKILL.md
 # Read when adapting the checklist format for a new platform or use case.
 
+**Canonical platform behavior:** [docs/platform-capabilities.md](../../docs/platform-capabilities.md)  
+**Mandatory exclusions (what the skill does not trigger):** [docs/MANDATORY_EXCLUSIONS.md](../../docs/MANDATORY_EXCLUSIONS.md)
+
 ---
 ## Purpose
 

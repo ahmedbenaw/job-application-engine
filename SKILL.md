@@ -1,6 +1,6 @@
 ---
 name: job-application-engine
-version: 1.0.0
+version: 2.0.1
 edition: generic-universal
 author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect
 description: |
@@ -22,6 +22,15 @@ compatibility:
   platforms: [Claude.ai, Claude CoWork, Manus]
   external_dependencies: none
 changelog:
+  - version: 2.0.1
+    date: 2026-04-25
+    notes: |
+      Platform documentation accuracy: canonical docs/platform-capabilities.md,
+      docs/MANDATORY_EXCLUSIONS.md, docs/REMEDIATION_INVENTORY.md; Manus Skills-first
+      install; hybrid patterns hybrid_chat_review (default) and cowork_end_to_end;
+      A0 STEP 2A mandatory artifact fallback for present_files; rules.json platform_notes
+      aligned; README CoWork/Claude/Manus claims corrected; artifact_policy in
+      automation-registry.json.
   - version: 1.0.0
     date: 2026-04-24
     notes: |
@@ -943,29 +952,48 @@ Present Phase 7 scoring gate.
 
 ## Platform Execution Notes
 
-Claude.ai: Sequential phases. Wait for scoring gate before advancing.
-  Confirm explicitly before Phase 4. Present status board each phase.
+Canonical reference: `docs/platform-capabilities.md`. Mandatory exclusions
+(not triggered by this skill): `docs/MANDATORY_EXCLUSIONS.md`. JAE does **not**
+invoke scheduling, generic OS computer-use, or undeclared host features — see
+those files.
 
-Claude CoWork: Phases 0, 1, and Phase 3 salary research run as parallel
-  subagents. Phase 2 must return a verdict before Phase 4 begins. Phases
-  5 and 6 run sequentially as final passes. Package output as downloadable
-  file on request. Status board as a static artifact updated per gate.
+Claude.ai (web chat): Run all phases **sequentially** in one conversation.
+Wait for the scoring gate before advancing. Confirm explicitly before Phase 4.
+Present the status board each phase. **Agentic** here means in-conversation
+tools and MCPs per host policy — not CoWork-class workspace VM automation.
 
-Using both together: Run Phases 0 and 1 in CoWork for parallel speed.
-  Transfer the Company Intelligence Brief into a Claude.ai session.
-  Run Phases 2 through 7 in Claude.ai for sequential gate control.
+Claude CoWork: Phases 0, 1, and Phase 3 salary research run as **parallel
+Tier-1 subagents** where `rules.json` permits. Phase 2 must return a verdict
+before Phase 4. Phases 5 and 6 run **sequentially**. Tier 2 and Tier 3
+automations run only on the **main coordination thread**. Package output as a
+downloadable file when the host supports it. Status board as a **static file
+artifact** updated per gate (see `references/skill-instructions/checklist-templates.md`).
+Parallelism is **authored in this skill**; CoWork **allows** it — the product
+does not auto-route phases without these rules.
 
-Manus: Paste rules.json into the Manus project as a .json or .md file at
-  session start. Manus treats it as session-scope instructions and executes
-  the phase sequence. Maintain the status board as a text artifact.
-  All 8 phase outputs must be confirmed by the user before advancing.
+**hybrid_chat_review (DEFAULT):** Run Phases 0 and 1 in CoWork. Copy the Company
+Intelligence Brief into Claude.ai. Run Phases 2–7 in Claude.ai for sequential
+gates and in-chat review of drafting.
+
+**cowork_end_to_end (SECONDARY):** Run Phases 0–7 entirely in CoWork when
+workspace files, downloadable packages, or staying in one agent workspace
+dominate the session goals.
+
+Manus — **primary:** Skills tab → **+ Add** → **Upload a skill** (`.zip` /
+`.skill`) or **Import from GitHub** with the public repository URL.
+**Fallback:** upload extracted workspace files; or paste `rules.json` as
+session-scope instructions. Maintain the status board as a **text block** in
+session context. All phase outputs require user confirmation before advancing.
+If `present_files` is INACTIVE, use **A0 STEP 2A — Mandatory artifact fallback**
+immediately for any local download step.
 
 ---
 
 ## Automation Layer — v2.0 Addition
 
-This section is purely additive to the v1.0 workflow. All 8 phases and their
-gates remain unchanged. The automation layer adds a capability detection
+This section is purely additive to the baseline eight-phase workflow shipped in
+the Generic Universal edition. All 8 phases and their gates remain unchanged.
+The automation layer adds a capability detection
 protocol at session start, inline automation recommendations at relevant
 phase steps, consent gates before any real-world action fires, and execution
 routing per platform. Read automation-registry.json for the full declared
@@ -1075,6 +1103,14 @@ RECOMMENDED JOB BOARD MCPs (shown only when all job board MCPs are INACTIVE):
    these MCPs. They unlock authenticated features like saved jobs, easy
    apply, and application status tracking.]
 ```
+
+STEP 2A — Mandatory artifact fallback (present_files, create_file, bash_tool):
+If **present_files**, **create_file**, or **bash_tool** is ❌ INACTIVE or ⚠ LIMITED such that local file presentation or shell-backed generation cannot run as written:
+  1. State which tool is blocked and why (from the Capability Map row).
+  2. Deliver the **full artifact content inline** (structured or monospace) — cover letter text, package summary, DOCX instructions, etc. Never claim `present_files` ran when the map shows INACTIVE.
+  3. Instruct the user to **save or copy** to their machine or workspace using the host UI (copy button, workspace file create, manual paste) — exact control depends on Claude.ai, CoWork, or Manus.
+  4. On **Manus**, treat **present_files** as potentially INACTIVE unless the map shows ACTIVE; use this fallback **without** waiting for failure at send time.
+  5. Read **artifact_policy** in `automation-registry.json` and **docs/MANDATORY_EXCLUSIONS.md** (Manus §) for normative scope.
 
 STEP 3 — Browser automation disclosure:
 If BrowserBase MCP is ACTIVE: note it as the primary path for form filling
@@ -1316,11 +1352,13 @@ after consent in the main coordination thread. Never dispatch an irreversible
 action to a subagent.
 
 Manus:
-All automations follow the rules.json automation_layer block as session
-instructions. Tier 1 actions execute inline. Tier 2 and Tier 3 actions
-pause and surface the consent gate as a text prompt in the session.
-Browser automation relies on Manus's native browser tools if BrowserBase
-and Playwright MCPs are not available.
+All automations follow the `rules.json` `automation_layer` block as session
+instructions (whether loaded via Skills, workspace files, or pasted rules).
+Tier 1 actions execute inline. Tier 2 and Tier 3 actions pause and surface
+the consent gate as a text prompt in the session. Browser automation relies on
+Manus's native browser tools if BrowserBase and Playwright MCPs are not
+available. For `present_files` INACTIVE, apply **A0 STEP 2A** before claiming
+any file download occurred.
 
 ---
 

@@ -1,5 +1,5 @@
 # Job Application Engine
-**Version 2.0.0 — Generic Universal Edition**
+**Version 2.0.1 — Generic Universal Edition**
 
 **Author: _Ahmed AW (Ben Zayed) | Product Leader, Builder & Venture Architect_**
 
@@ -18,8 +18,8 @@ recommends available options.
 
 ## Quick Start
 
-1. [Download `JAE-v2.0-Generic-Universal-2026-04-25.zip` from the v2.0.0 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
-2. In Claude: go to **Customize → Skills → Create Skill → Upload ZIP**
+1. [Download `JAE-v2.0.1-Generic-Universal-2026-04-25.zip` from the v2.0.1 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1)
+2. Install the skill: **Claude.ai / Claude CoWork** — **Customize → Skills → Create Skill → Upload ZIP**. **Manus** — **Skills → + Add → Upload** or **Import from GitHub** (see [Platform Setup](#platform-setup)).
 3. Choose your entry mode:
 
 **Mode A — Discover roles matching your profile:**
@@ -331,36 +331,34 @@ job-application-engine/
 
 ## Platform Setup
 
-> **Supported platforms with native Agent Skills:** Claude.ai (Pro and above) and
-> Claude CoWork support native skill installation — this is the correct primary method
-> and gives the skill full agentic capabilities. All other methods listed below are
-> alternatives for free tiers or platforms that do not support the Skills feature.
+**Canonical docs (read these — normative for the skill):**
+
+- [docs/platform-capabilities.md](docs/platform-capabilities.md) — Claude.ai, CoWork, Manus, hybrid patterns  
+- [docs/MANDATORY_EXCLUSIONS.md](docs/MANDATORY_EXCLUSIONS.md) — what JAE does **not** trigger (scheduling, OS computer-use, etc.)  
+- [docs/REMEDIATION_INVENTORY.md](docs/REMEDIATION_INVENTORY.md) — traceability of this documentation pass  
+
+> **Agent Skills (where the product offers them):** On **Claude.ai** and **Claude CoWork**, uploading this skill via the product’s **Skills** UI is the primary install path (exact menu labels depend on Anthropic’s current UI — see their documentation for your plan). Skills give **in-session** tool and MCP use within that product’s limits — not the same as every CoWork-class workspace feature. **Manus** supports **Skills** too: **Skills → + Add → Upload a skill** (`.zip` / `.skill`) or **Import from GitHub** using this repo’s public URL. Fallbacks below apply when Skills are unavailable or you prefer file-based loading.
 
 ---
 
-### Claude.ai — Web or Mobile
+### Claude.ai — Web (Skills UI); mobile varies by app version
 
-**Primary — Agent Skills install (Pro and above)**
+**Primary — Agent Skills install** *(requires a Claude plan that includes Skills — see Anthropic’s current documentation)*
 
-This is the correct installation method. It makes the skill available across every
-conversation and gives it full agentic execution capability.
+This method makes the skill available across conversations that support Skills.
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
-2. In Claude, click your profile icon → **Customize**
-3. Go to **Skills** → **Create Skill**
-4. Upload the ZIP file directly
-5. The skill is now active across all your Claude conversations — no project setup required
-6. Begin any conversation with: *"Find me jobs similar to [ROLE] in [CITY]"*
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1)
+2. In Claude (web): profile → **Customize** → **Skills** → **Create Skill** → upload the ZIP  
+   On **mobile**, use the path your Claude app exposes for **Skills**; if Skills are not exposed, use **Project Knowledge** fallback below.
+3. The skill is active where Skills apply — no separate project is required for that mode.
+4. Begin with a trigger such as: *"Find me jobs similar to [ROLE] in [CITY]"*
 
-**Alternative — Project Knowledge upload** *(free tier or if Skills not available)*
-
-If you are on a free plan or your account does not have the Skills feature:
+**Alternative — Project Knowledge upload** *(accounts without Skills or mobile without Skills UI)*
 
 1. Go to [claude.ai](https://claude.ai) → **Projects** → **New Project**
-2. Open **Project Settings** → **Project Knowledge**
-3. Upload these files individually: `SKILL.md`, `rules.json`, `automation-registry.json`,
-   and every file inside `references/` including both subdirectories
-4. Use the skill within conversations inside that project only
+2. **Project Settings** → **Project Knowledge**
+3. Upload **every** tracked skill file: `SKILL.md`, `rules.json`, `automation-registry.json`, and **all** files under `references/` (both subfolders), preserving paths where the UI allows.
+4. Use the skill only inside that project.
 
 **Alternative — Git clone then upload to Project Knowledge**
 
@@ -368,17 +366,13 @@ If you are on a free plan or your account does not have the Skills feature:
 git clone https://github.com/ahmedbenaw/job-application-engine.git
 ```
 
-Upload the individual files from the cloned folder into Project Knowledge as above.
+Upload the same file set from the clone into Project Knowledge as above.
 
-**How it runs on Claude.ai:** all phases run sequentially in one conversation.
-The system presents each phase output and waits for your scoring gate response.
-Confirm explicitly before Phase 4 — this is where application text is first written.
+**How it runs on Claude.ai:** All phases run **sequentially** in one conversation. Each phase output is scored before advancing. Confirm explicitly before Phase 4 (first application text).
 
-**Best for:** single-candidate sessions where you want full sequential control and
-direct review at every step.
+**Best for:** Single-thread review and scoring gates in chat.
 
-**Limitation:** phases cannot run in parallel. For high-volume discovery across all
-10 platforms simultaneously, CoWork is significantly faster.
+**Limitation:** No parallel phase fan-out like CoWork Tier-1. For **many** platform searches at once, **CoWork** (or splitting work manually) is faster. For **LinkedIn / Indeed** and other bot-heavy targets, prefer environments with reliable **browser MCP** when chat-only fetch is weak — see `SKILL.md` A0 and job-board strategy.
 
 ---
 
@@ -386,21 +380,17 @@ direct review at every step.
 
 **Primary — Agent Skills install**
 
-CoWork supports native skill installation. Install once; the skill is available
-across all CoWork projects and agents.
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1)
+2. **Customize → Skills → Create Skill** → upload the ZIP (labels per current CoWork UI).
+3. The skill is available to CoWork agents that load Skills.
+4. Open a **New Project** and run the workflow. **Parallelism** for Phases 0, 1, and Phase 3 salary research is **defined in this skill** (`SKILL.md`, `rules.json`); CoWork **allows** parallel Tier-1 work — the product does not auto-route phases without those rules.
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
-2. In CoWork, go to **Customize → Skills → Create Skill**
-3. Upload the ZIP directly
-4. The skill is now available to all agents in your CoWork environment
-5. Open a new CoWork project and begin — CoWork routes parallel phases automatically
+**Alternative — Workspace file upload** *(if Skills are unavailable on your tier)*
 
-**Alternative — Workspace file upload** *(if Skills not available on your CoWork tier)*
-
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
-2. Open Claude CoWork → **New Project** → **Upload**
-3. Upload all 20 files individually, preserving the `references/` folder hierarchy
-4. CoWork reads `rules.json` as the workflow instruction source
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1)
+2. CoWork → **New Project** → **Upload**
+3. Upload **all** files from the extracted ZIP (root files plus the entire `references/` tree — same set `git ls-files` would list from this repo). Preserve folder hierarchy.
+4. CoWork reads `rules.json` as the workflow instruction source.
 
 **Alternative — Git clone**
 
@@ -408,72 +398,53 @@ across all CoWork projects and agents.
 git clone https://github.com/ahmedbenaw/job-application-engine.git
 ```
 
-Upload the cloned files into the CoWork workspace as above.
+Upload the clone into the workspace as above.
 
-**How it runs on CoWork:** Phases 0, 1, and salary research in Phase 3 run as
-parallel subagents. Phase 2 must return a verdict before Phase 4 begins. Phases 5
-and 6 always run sequentially. Tier 2 and Tier 3 consent gates always run in the
-main coordination thread — never dispatched to a subagent.
+**How it runs on CoWork:** Phases 0, 1, and salary research in Phase 3 may run as **parallel Tier-1 subagents**. Phase 2 returns a verdict before Phase 4. Phases 5–6 run **sequentially**. Tier 2 and Tier 3 automations run only on the **main coordination thread** (never on subagents). Checklist format: static file artifact per [references/skill-instructions/checklist-templates.md](references/skill-instructions/checklist-templates.md).
 
-**Best for:** high-volume discovery, multiple simultaneous applications, or when
-you need the final package as a downloadable file.
+**Best for:** Parallel discovery, workspace artifacts, downloadable packages when the host supports file presentation.
 
-**Limitation:** subagent output transfer requires user coordination. For a simpler
-linear experience, use Claude.ai.
+**Limitation:** Handoff between subagents and the main thread may need your confirmation. For a single linear chat thread, use Claude.ai.
 
 ---
 
 ### Claude.ai + CoWork Combined
 
-This is the recommended approach for any serious application. Install the skill
-via **Customize → Skills → Create Skill → Upload ZIP** on both platforms.
+Install via **Skills** on both hosts when available. Two patterns — see [docs/platform-capabilities.md](docs/platform-capabilities.md):
 
-**How to run:**
-- **Phases 0 and 1** → run in CoWork for parallel discovery speed
-- Copy the **Company Intelligence Brief** from CoWork into a Claude.ai conversation
-- **Phases 2 through 7** → run in Claude.ai for sequential gate control and writing
+**`hybrid_chat_review` (DEFAULT)** — CoWork speed for research, Claude.ai for dense review:
 
-**Best for:** applications where Phase 0 searches more than 5 platforms and you want
-both parallel research speed and granular control over the application writing phases.
+- **Phases 0 and 1** → CoWork (parallel Tier-1 where applicable)
+- Copy the **Company Intelligence Brief** into Claude.ai
+- **Phases 2–7** → Claude.ai (sequential scoring gates and drafting review in one thread)
+
+**`cowork_end_to_end` (SECONDARY)** — all **Phases 0–7** in CoWork when workspace files, downloads, or browser-heavy steps should stay in one place.
+
+**Best for:** `hybrid_chat_review` when you want parallel discovery plus chat-centric writing review; `cowork_end_to_end` when file/workspace delivery dominates.
 
 ---
 
 ### Manus
 
-Manus does not currently support the Agent Skills install format. Use the file
-upload method below as the primary approach.
+**Primary — Agent Skills (current product)**
 
-**Primary — Upload files + rules.json as session instruction source**
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.1) *or* use **Import from GitHub** with  
+   `https://github.com/ahmedbenaw/job-application-engine`
+2. In Manus: **Skills** tab → **+ Add** → **Upload a skill** (`.zip` / `.skill`) **or** **Import from GitHub** (public repo URL above).
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
-2. Extract the ZIP locally
-3. Upload all extracted files into your Manus project workspace
-4. Manus reads `rules.json` as the session instruction source governing the full
-   8-phase sequence and automation routing
-5. Begin — Manus follows the phase sequence as defined in `rules.json`
+**Fallback — Workspace upload + `rules.json`**
 
-**Alternative — Paste rules.json as session instruction** *(if file upload not available)*
+1. Download and extract the release ZIP (or clone the repo).
+2. Upload all skill files into the Manus project workspace (same full `references/` tree as source).
+3. Ensure `rules.json` is loaded as the session instruction source if your workflow requires it.
 
-Copy the full contents of `rules.json` and paste it into the Manus project as a
-`.json` or `.md` file at session start.
+**Fallback — Paste `rules.json`**
 
-**Alternative — Git clone**
+Paste the full contents of `rules.json` into the project as `.json` or `.md` at session start when file upload is impractical.
 
-```bash
-git clone https://github.com/ahmedbenaw/job-application-engine.git
-```
+**How it runs on Manus:** Same eight phases and gates; Tier 1 inline; Tier 2/3 as text prompts. Status board = **text block** in session (see checklist-templates **Platform Notes**). Browser: Manus native browser when BrowserBase/Playwright MCPs are unavailable. **`present_files`:** may be unavailable — the skill uses **inline artifact fallback** (`SKILL.md` A0 STEP 2A); users may need to copy/save outputs manually.
 
-**How it runs on Manus:** all phase outputs confirmed by user before advancing.
-Tier 1 automations execute inline. Tier 2 and Tier 3 consent gates surface as text
-prompts. Status board maintained as a text block updated at each gate. Browser
-automation uses Manus's native browser tools when BrowserBase and Playwright MCPs
-are unavailable.
-
-**Best for:** agent-based workflows across longer time horizons or managing multiple
-applications as background tasks.
-
-**Limitation:** Manus does not support `present_files`. Final output must be copied
-from the conversation rather than downloaded as a file.
+**Best for:** Longer agent sessions and multi-step application tracking in Manus.
 
 ---
 

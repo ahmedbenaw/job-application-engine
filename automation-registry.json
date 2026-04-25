@@ -1,5 +1,5 @@
 {
-  "registry_version": "2.0.0",
+  "registry_version": "2.0.1",
   "created": "2026-04-24",
   "author": "Ahmed Ossama | Product Leader, Builder & Venture Management Architect",
   "scope_rule": "Only automations declared in this registry may be triggered by the skill. No automation may be improvised or added during a session. Scope is locked at this file.",
@@ -241,6 +241,13 @@
       "scope_boundary": "Search and recommendation only. Does not install, connect, or configure any MCP. User must connect MCPs themselves via their platform settings."
     }
   ],
+  "artifact_policy": {
+    "present_files_inactive_fallback": "When present_files is INACTIVE in A0, follow SKILL.md section A0 — Mandatory artifact fallback: deliver full artifact content inline (monospace or structured text) and instruct the user to save manually. Never assume a host file-download primitive exists.",
+    "canonical_docs": [
+      "docs/platform-capabilities.md",
+      "docs/MANDATORY_EXCLUSIONS.md"
+    ]
+  },
   "out_of_scope_examples": [
     "Accessing candidate accounts on job platforms without session credentials",
     "Sending emails to anyone other than hiring manager, recruiter, or user's own address",

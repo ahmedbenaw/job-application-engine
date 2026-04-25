@@ -1,7 +1,7 @@
 {
   "skill": {
     "name": "job-application-engine",
-    "version": "1.0.0",
+    "version": "2.0.1",
     "edition": "generic-universal",
     "author": "Ahmed Ossama | Product Leader, Builder & Venture Management Architect",
     "external_dependencies": "none"
@@ -298,10 +298,16 @@
     "always_update_salary_anchors_after_offer_data"
   ],
   "platform_notes": {
-    "claude_ai": "sequential_all_phases_wait_for_scoring_gate",
-    "claude_cowork": "phases_0_1_salary_research_parallel_phases_2_to_7_sequential",
-    "combined": "phases_0_1_cowork_then_transfer_brief_phases_2_to_7_claude_ai",
-    "manus": "paste_this_file_as_session_instruction_source"
+    "claude_ai": "sequential_all_phases_wait_for_scoring_gate_in_conversation_tools_mcp_per_host_policy",
+    "claude_cowork": "phases_0_1_salary_research_parallel_tier1_subagents_phases_2_to_7_sequential_tier2_tier3_main_thread_only",
+    "claude_cowork_uses": ["parallel_tier1_readonly_phases_0_1_phase3_salary", "workspace_artifacts_checklist", "mcp_browser_email_cloud_calendar_when_connected"],
+    "claude_cowork_exclusions_doc": "docs/MANDATORY_EXCLUSIONS.md",
+    "hybrid_chat_review": "DEFAULT: phases_0_1_in_cowork_transfer_company_intelligence_brief_phases_2_to_7_in_claude_ai_sequential_gates",
+    "cowork_end_to_end": "OPTIONAL_PATTERN: all_phases_0_through_7_in_cowork_when_workspace_files_downloadables_or_heavy_browser_work_dominate",
+    "combined": "alias_of_hybrid_chat_review_for_backward_compat",
+    "manus": "PRIMARY: skills_tab_add_upload_zip_or_skill_or_import_from_github_public_repo_FALLBACK: workspace_file_upload_or_paste_rules_json_as_session_instruction",
+    "canonical_platform_doc": "docs/platform-capabilities.md",
+    "mandatory_exclusions_doc": "docs/MANDATORY_EXCLUSIONS.md"
   },
   "automation_layer": {
     "version": "2.0.0",
