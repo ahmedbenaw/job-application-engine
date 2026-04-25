@@ -68,165 +68,194 @@ Approval gates authorise real-world actions. These are entirely separate systems
 ## Workflow Diagram
 
 ```mermaid
+%%{init: {
+  'theme': 'dark',
+  'themeVariables': {
+    'primaryColor': '#0d1b2a',
+    'primaryTextColor': '#e2e8f0',
+    'primaryBorderColor': '#1e40af',
+    'lineColor': '#94a3b8',
+    'secondaryColor': '#1e293b',
+    'tertiaryColor': '#0f172a',
+    'edgeLabelBackground': '#1e293b',
+    'clusterBkg': '#0d1117',
+    'clusterBorder': '#1e3a6e',
+    'titleColor': '#7dd3fc',
+    'nodeTextColor': '#ffffff'
+  }
+}}%%
 flowchart LR
 
-  %% ── SESSION START ─────────────────────────────────────────────
-  START([SESSION\nSTART]):::entry
+  %% ── SESSION START ─────────────────────────────────────
+  START([" 🟢 Session Start "]):::entry
 
-  %% ── A0 — CAPABILITY DETECTION ────────────────────────────────
-  subgraph CAP[" A0 — Capability Detection "]
-    direction TB
-    A0["Probe tools & MCP connections\nBuild & present Capability Map\nPlaywright disclosure if BrowserBase inactive"]:::automation
-    CONFIRM_A0{Map\nconfirmed?}:::gate
+  %% ── A0 — CAPABILITY DETECTION ────────────────────────
+  subgraph CAP["  A0 · Capability Detection"]
+    direction LR
+    A0_PW["Playwright\nDisclosure"]:::autonode
+    A0_CONF{Capability Map\nConfirmed?}:::gate
+    A0_PT["Probe Tools &\nConnections"]:::step
+    A0_CM["Build\nCapability Map"]:::step
+    A0_PW --> A0_CONF
+    A0_CONF -- No --> A0_PW
+    A0_CONF -- Yes --> A0_PT --> A0_CM
   end
   START --> CAP
-  CONFIRM_A0 -- No --> A0
 
-  %% ── PHASE 0 — JOB DISCOVERY ──────────────────────────────────
-  subgraph PH0[" Phase 0 — Job Discovery "]
-    direction TB
-    P0["10 platforms · 2-pass search\nFilter exclusions · Rank table\nFlag top 5"]:::phase
-    A01["⚡ A01 T1\nJob Board Fetch\nauto-executes inline"]:::tier1
-    A02["⚡ A02 T1\nFull JD Fetch\ntop 5 after scoring"]:::tier1
-    G0{Score\n= 5?}:::gate
-    P0 --> A01 --> A02 --> G0
-    G0 -- "< 5 · Revise" --> P0
-  end
-  CONFIRM_A0 -- Yes --> PH0
-
-  %% ── PHASE 1 — COMPANY INTELLIGENCE ──────────────────────────
-  subgraph PH1[" Phase 1 — Company Intelligence "]
-    direction TB
-    P1["4 parallel ops\nJD fetch · Form fetch\nHiring manager ID\nCompany & product research"]:::phase
-    A03["⚡ A03 T1\nForm Fetch & Parse\nplatform-aware strategy"]:::tier1
-    G1{Score\n= 5?}:::gate
-    P1 --> A03 --> G1
-    G1 -- "< 5 · Revise" --> P1
-  end
-  G0 -- "= 5" --> PH1
-
-  %% ── PHASE 2 — FIT ANALYSIS ───────────────────────────────────
-  subgraph PH2[" Phase 2 — Fit Analysis "]
-    direction TB
-    P2["Role level detection\nRequirements extraction\n2-col evidence mapping\nCompensating evidence"]:::phase
-    VERDICT{Verdict?}:::decision
-    MISMATCH["🚫 MISMATCH\nHalt · Inform user\nNo materials produced"]:::halt
-    G2{Score\n= 5?}:::gate
-    P2 --> VERDICT
-    VERDICT -- Mismatch --> MISMATCH
-    VERDICT -- "Clean Fit or\nHonest Stretch" --> G2
-    G2 -- "< 5 · Revise" --> P2
-  end
-  G1 -- "= 5" --> PH2
-
-  %% ── PHASE 3 — CLARIFYING INTAKE ─────────────────────────────
-  subgraph PH3[" Phase 3 — Clarifying Intake "]
-    direction TB
-    P3["5 critical gates · 3 important\nSalary research · Product trial\nCustom questions · Language level"]:::phase
-    A08P3["📧 A08 T3\nEmail Hiring Manager\nif follow-up needed\nAPPROVE SEND"]:::tier3
-    G3{Score\n= 5?}:::gate
-    P3 --> A08P3 --> G3
-    G3 -- "< 5 · Revise" --> P3
-  end
-  G2 -- "= 5" --> PH3
-
-  %% ── PHASE 4 — APPLICATION PACKAGE ───────────────────────────
-  subgraph PH4[" Phase 4 — Application Package "]
-    direction TB
-    P4["Standard fields · Summary\n5-para cover letter\nCustom question answers\nRoutes through Phase 5"]:::phase
-    A06["📄 A06 T2\nCover Letter DOCX\nAPPROVE CREATE"]:::tier2
-    DL1["⬇ Local Download\npresent_files · always first"]:::storage
-    CQ1{Save to\ncloud?}:::decision
-    A09a["☁ A09 T2\nCloud Save\nUser selects provider\nAPPROVE SAVE"]:::tier2
-    G4{Score\n= 5?}:::gate
-    P4 --> A06 --> DL1 --> CQ1
-    CQ1 -- Yes --> A09a --> G4
-    CQ1 -- No --> G4
-    G4 -- "< 5 · Revise" --> P4
-  end
-  G3 -- "= 5" --> PH4
-
-  %% ── PHASE 5 — WRITING QUALITY PASS ──────────────────────────
-  subgraph PH5[" Phase 5 — Writing Quality Pass "]
-    direction TB
-    P5["25 patterns · 5 families\nPass 1: Remove patterns\nPass 2: Internal audit loop\nFinal version only — never draft"]:::phase
-    G5{Score\n= 5?}:::gate
-    P5 --> G5
-    G5 -- "< 5 · Revise" --> P5
-  end
-  G4 -- "= 5" --> PH5
-
-  %% ── PHASE 6 — GOVERNANCE GATE ────────────────────────────────
-  subgraph PH6[" Phase 6 — Governance Gate "]
-    direction TB
-    P6["8 sequential checks\nFix all failures first\nNo open check presented"]:::phase
-    A07["📦 A07 T2\nFull Package Doc\nAPPROVE CREATE"]:::tier2
-    DL2["⬇ Local Download\npresent_files · always first"]:::storage
-    CQ2{Save to\ncloud?}:::decision
-    A09b["☁ A09 T2\nCloud Save\nUser selects provider\nAPPROVE SAVE"]:::tier2
-    A04["🖥 A04 T3\nBrowser Form Fill\nBrowserBase primary\nPlaywright secondary\nAPPROVE FILL\ndoes NOT submit"]:::tier3
-    A05["🚀 A05 T3\nApplication Submit\nafter A04 reviewed\nAPPROVE SUBMIT\nirreversible"]:::tier3
-    G6{Score\n= 5?}:::gate
-    P6 --> A07 --> DL2 --> CQ2
-    CQ2 -- Yes --> A09b --> A04
-    CQ2 -- No --> A04
-    A04 --> A05 --> G6
-    G6 -- "< 5 · Revise" --> P6
-  end
-  G5 -- "= 5" --> PH6
-
-  %% ── PHASE 7 — POST-SUBMISSION LOOP ──────────────────────────
-  subgraph PH7[" Phase 7 — Post-Submission Loop "]
-    direction TB
-    P7["3 branches by outcome"]:::phase
-    BRANCH{Outcome?}:::decision
-    BR_A["✅ Branch A — Submitted\nAnchor next search\nReturn to Phase 0"]:::branch
-    BR_B["↩ Branch B — Withdrawn\nLog reason\nRefine next discovery"]:::branch
-    BR_C["❌ Branch C — Rejected\nLog gap\nRecalibrate search"]:::branch
-    A10["📅 A10 T2\nCalendar Reminder\nAPPROVE CALENDAR"]:::tier2
-    A11["📧 A11 T2\nEmail to Self\nPackage record\nAPPROVE SEND"]:::tier2
-    G7{Score\n= 5?}:::gate
-    P7 --> BRANCH
-    BRANCH -- Submitted --> BR_A
-    BRANCH -- Withdrawn --> BR_B
-    BRANCH -- Rejected --> BR_C
-    BR_A --> A10 --> A11 --> G7
-    BR_B --> G7
-    BR_C --> G7
-    G7 -- "< 5 · Revise" --> P7
-  end
-  G6 -- "= 5" --> PH7
-
-  %% ── SESSION END ───────────────────────────────────────────────
-  NEXT([NEXT\nDISCOVERY]):::entry
-  DONE([SESSION\nCLOSE]):::entry
-  G7 -- "= 5 · Branch A" --> NEXT
-  NEXT -. "back to Phase 0" .-> PH0
-  G7 -- "= 5 · B or C" --> DONE
-
-  %% ── CONSENT TIER LEGEND ──────────────────────────────────────
-  subgraph LEGEND[" Consent Tiers — always separate from scoring "]
+  %% ── PHASE 0 — JOB DISCOVERY ──────────────────────────
+  subgraph PH0["  P0 · Job Discovery"]
     direction LR
-    L1["⚡ Tier 1\nRead-only\nAuto-executes\nNo gate required"]:::tier1
-    L2["📄 Tier 2\nReversible write\nAPPROVE ACTION\ntyped explicitly"]:::tier2
-    L3["🚀 Tier 3\nIrreversible\nAPPROVE PHRASE\nFull data preview first\nScore ≠ Approval"]:::tier3
+    P0_PS["Platform Search\n& Filter"]:::step
+    P0_JB["Job Board\nFetch"]:::step
+    P0_G{Top 5\nScored?}:::gate
+    P0_FJ["Full JD\nFetch"]:::step
+    P0_PS --> P0_JB --> P0_G
+    P0_G -- No --> P0_PS
+    P0_G -- Yes --> P0_FJ
+  end
+  A0_CM --> PH0
+
+  %% ── PHASE 1 — COMPANY INTELLIGENCE ──────────────────
+  subgraph PH1["  P1 · Company Intelligence"]
+    direction LR
+    P1_PR["Parallel\nResearch"]:::step
+    P1_FF["Form Fetch\n& Parse"]:::step
+    P1_G{Company\nScore 5?}:::gate
+    P1_PR --> P1_FF --> P1_G
+    P1_G -- No --> P1_PR
+  end
+  P0_FJ --> PH1
+
+  %% ── PHASE 2 — FIT ANALYSIS ───────────────────────────
+  subgraph PH2["  P2 · Fit Analysis"]
+    direction LR
+    P2_FV{Fit\nVerdict?}:::gate
+    P2_MH(["🚫 Mismatch\nHalt"]):::halt
+    P2_RE["Role & Requirements\nExtraction"]:::step
+    P2_EM["Evidence\nMapping"]:::step
+    P2_FS{Fit\nScore 5?}:::gate
+    P2_FV -- Mismatch --> P2_MH
+    P2_FV -- "Clean Fit or\nHonest Stretch" --> P2_FS
+    P2_FS -- No --> P2_RE --> P2_EM --> P2_FS
+  end
+  P1_G -- Yes --> PH2
+
+  %% ── PHASE 3 — CLARIFYING INTAKE ─────────────────────
+  subgraph PH3["  P3 · Clarifying Intake"]
+    direction LR
+    P3_CG["Critical Gates\n& Research"]:::step
+    P3_EH["Email Hiring\nManager"]:::autonode
+    P3_G{Intake\nScore 5?}:::gate
+    P3_CG --> P3_EH --> P3_G
+    P3_G -- No --> P3_CG
+  end
+  P2_FS -- Yes --> PH3
+
+  %% ── PHASE 4 — APPLICATION PACKAGE ───────────────────
+  subgraph PH4["  P4 · Application Package"]
+    direction LR
+    P4_SQ{Save to\nCloud?}:::gate
+    P4_CS["Cloud\nSave"]:::storage
+    P4_PM["Prepare Application\nMaterials"]:::step
+    P4_CL["Create Cover\nLetter"]:::step
+    P4_LD["Local\nDownload"]:::storage
+    P4_G{Package\nScore 5?}:::gate
+    P4_SQ -- Yes --> P4_CS --> P4_PM
+    P4_SQ -- No --> P4_PM
+    P4_PM --> P4_CL --> P4_LD --> P4_G
+    P4_G -- No --> P4_SQ
+  end
+  P3_G -- Yes --> PH4
+
+  %% ── PHASE 5 — WRITING QUALITY PASS ──────────────────
+  subgraph PH5["  P5 · Writing Quality Pass"]
+    direction LR
+    P5_PA["Pattern Removal\n& Audit"]:::step
+    P5_G{Writing\nScore 5?}:::gate
+    P5_PA --> P5_G
+    P5_G -- No --> P5_PA
+  end
+  P4_G -- Yes --> PH5
+
+  %% ── PHASE 6 — GOVERNANCE GATE ────────────────────────
+  subgraph PH6["  P6 · Governance Gate"]
+    direction LR
+    P6_SC{Save to\nCloud 2?}:::gate
+    P6_CS2["Cloud\nSave 2"]:::storage
+    P6_BF["Browser\nForm Fill"]:::autonode
+    P6_AS["Application\nSubmit"]:::danger
+    P6_G{Governance\nScore 5?}:::gate
+    P6_SQ["Sequential\nChecks"]:::step
+    P6_FP["Create Full\nPackage Doc"]:::step
+    P6_LD["Local\nDownload 2"]:::storage
+    P6_SC -- Yes --> P6_CS2 --> P6_BF
+    P6_SC -- No --> P6_BF
+    P6_BF --> P6_AS --> P6_G
+    P6_G -- No --> P6_SQ --> P6_FP --> P6_LD --> P6_SC
+  end
+  P5_G -- Yes --> PH6
+
+  %% ── PHASE 7 — POST SUBMISSION LOOP ──────────────────
+  subgraph PH7["  P7 · Post Submission Loop"]
+    direction LR
+    P7_OB{Outcome\nBranching}:::gate
+    P7_A["Branch A\nSubmitted"]:::branchA
+    P7_B["Branch B\nWithdrawn"]:::branchB
+    P7_C["Branch C\nRejected"]:::branchC
+    P7_CR["Calendar\nReminder"]:::autonode
+    P7_ES["Email\nto Self"]:::step
+    P7_G{Post-Submission\nScore 5?}:::gate
+    P7_OB -- Submitted --> P7_A
+    P7_OB -- Withdrawn --> P7_B
+    P7_OB -- Rejected --> P7_C
+    P7_A --> P7_CR --> P7_ES --> P7_G
+    P7_B --> P7_G
+    P7_C --> P7_G
+    P7_G -- No --> P7_OB
+  end
+  P6_G -- Yes --> PH7
+
+  %% ── SESSION END ──────────────────────────────────────
+  NEXT([" 🔄 Next Discovery "]):::entry
+  DONE([" ⏹ Session Close "]):::endnode
+  P7_G -- "Yes · Branch A" --> NEXT
+  NEXT -. "back to P0" .-> PH0
+  P7_G -- "Yes · B or C" --> DONE
+
+  %% ── LEGEND ───────────────────────────────────────────
+  subgraph LEGEND["  Legend — Consent Tiers · separate from scoring"]
+    direction LR
+    LL1["⚡ Tier 1 — Auto\nRead-only · no gate"]:::step
+    LL2["📄 Tier 2 — APPROVE\nReversible write"]:::storage
+    LL3["🚀 Tier 3 — APPROVE PHRASE\nIrreversible · full preview\nScore ≠ Approval"]:::danger
+    LLG{Score Gate\n1–5 · need 5}:::gate
+    LLS([Session\nStart/End]):::entry
   end
 
-  %% ── STYLES ────────────────────────────────────────────────────
-  classDef entry      fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#3b0764,font-weight:bold
-  classDef phase      fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#1e3a5f
-  classDef gate       fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d,font-weight:bold
-  classDef decision   fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#713f12
-  classDef automation fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
-  classDef tier1      fill:#d1fae5,stroke:#059669,stroke-width:1px,color:#064e3b
-  classDef tier2      fill:#fef3c7,stroke:#d97706,stroke-width:1px,color:#78350f
-  classDef tier3      fill:#fee2e2,stroke:#dc2626,stroke-width:1.5px,color:#7f1d1d,font-weight:bold
-  classDef halt       fill:#fecaca,stroke:#b91c1c,stroke-width:2.5px,color:#450a0a,font-weight:bold
-  classDef branch     fill:#dbeafe,stroke:#3b82f6,stroke-width:1px,color:#1e3a5f
-  classDef storage    fill:#f3e8ff,stroke:#9333ea,stroke-width:1px,color:#3b0764
+  %% ── STYLES ───────────────────────────────────────────
+  classDef entry    fill:#0f766e,stroke:#14b8a6,stroke-width:2px,color:#ccfbf1,font-weight:bold
+  classDef endnode  fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px,color:#bfdbfe,font-weight:bold
+  classDef step     fill:#134e4a,stroke:#0d9488,stroke-width:1.5px,color:#ccfbf1
+  classDef autonode fill:#7c2d12,stroke:#f97316,stroke-width:1.5px,color:#fed7aa
+  classDef gate     fill:#14532d,stroke:#22c55e,stroke-width:2px,color:#bbf7d0,font-weight:bold
+  classDef halt     fill:#7f1d1d,stroke:#ef4444,stroke-width:2.5px,color:#fecaca,font-weight:bold
+  classDef danger   fill:#7f1d1d,stroke:#f87171,stroke-width:2px,color:#fecaca
+  classDef storage  fill:#4a1d96,stroke:#a78bfa,stroke-width:1.5px,color:#ede9fe
+  classDef branchA  fill:#064e3b,stroke:#34d399,stroke-width:1.5px,color:#a7f3d0
+  classDef branchB  fill:#451a03,stroke:#fb923c,stroke-width:1.5px,color:#fed7aa
+  classDef branchC  fill:#450a0a,stroke:#f87171,stroke-width:1.5px,color:#fecaca
 ```
 
-> **Reading the diagram:** Blue subgraphs = workflow phases · Green diamonds = scoring gates (5/5 required to advance, loops back on fail) · Yellow diamonds = decision points · Red box = Mismatch halt (workflow stops entirely) · Green nodes = Tier 1 automations (auto-execute, no gate) · Yellow/amber nodes = Tier 2 automations (APPROVE required) · Red nodes = Tier 3 automations (irreversible — full data preview + APPROVE PHRASE) · Purple nodes = local file download steps (always before cloud save) · Dashed arrow = loop back to Phase 0 after successful submission.
+| Symbol | Meaning |
+|--------|---------|
+| 🟢 Teal pill | Session start / end |
+| 🟩 Green diamond | Scoring gate — 5/5 required · loops back on fail |
+| 🟦 Teal rectangle | Process step — auto-executes |
+| 🟧 Orange rectangle | Automation side-node — Tier 3 `APPROVE PHRASE` |
+| 🟥 Red rounded pill | **Mismatch halt** — workflow stops entirely |
+| 🟣 Purple rectangle | File storage — local download always before cloud |
+| 🔴 Dark red rectangle | Irreversible action — `APPROVE SUBMIT` / `APPROVE FILL` |
+| `- -` Dashed arrow | Loop back to Phase 0 after successful submission |
 
 ---
 
