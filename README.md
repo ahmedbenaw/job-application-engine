@@ -454,16 +454,56 @@ from the conversation rather than downloaded as a file.
 
 ## First-Use Setup Protocol
 
-Before your first job search session, complete your Applicant Profile:
+The skill builds your Applicant Profile automatically — it extracts data from
+any documents or links you provide before asking a single question manually.
 
-1. Open `references/applicant-profile-template.md`
-2. Fill in the **Static Fields** — name, contact details, education, exclusion list
-3. Leave Dynamic Fields with their `[PLACEHOLDER]` tokens for now
-4. Save the file and include it in your platform upload
+**What to provide (any combination works):**
 
-The First-Use Setup Protocol inside the skill walks you through populating all
-Dynamic Fields in your first session via a structured 25-question intake. After
-that, the profile is your persistent source of truth across all sessions and roles.
+| Source | What gets extracted |
+|---|---|
+| CV / Resume (PDF or DOCX) | Name, contact, education, work history, tools, skills, certifications |
+| LinkedIn profile URL | Headline, experience, education, skills, certifications, contact |
+| GitHub profile URL | Repos, languages, tools, project descriptions |
+| Personal website / portfolio URL | Bio, projects, contact information |
+| Behance / Dribbble URL | Project names, descriptions, tools used |
+| Text description in chat | Any background you describe in your opening message |
+
+**How it works:**
+
+1. At session start, the skill runs **Step 0 — Document Detection** first.
+   It reads every uploaded file and fetches every URL you provided.
+2. It extracts every recognisable profile field from those sources and
+   presents a confirmation summary showing what was found.
+3. You confirm, correct, or add to the extracted values.
+4. Only for fields that could not be extracted does it ask follow-up questions.
+5. The complete profile is presented for final review and a scoring gate
+   (score of 5 required before Phase 0 begins).
+
+**If you provide a CV and a LinkedIn URL, most fields populate with zero
+manual typing.** If you provide nothing, the skill asks all 25 fields
+sequentially.
+
+**Profile updates during and after applications:**
+
+The profile is not a one-time setup. The skill updates it at two points
+during every application cycle:
+
+After **Phase 3 (Clarifying Intake):** if new information collected during
+the intake differs from the profile (new salary confirmation, updated
+availability, new tool added to your stack, language level change), the
+skill flags the difference and asks for approval to update the profile field.
+
+After **Phase 7 (Post-Submission Loop):** every application outcome —
+submitted, withdrawn, or rejected — is logged and checked for profile
+implications. An offer received updates salary anchors. A recurring rejection
+pattern triggers a seniority or sector targeting review. All updates require
+explicit `APPROVE UPDATE` before being written.
+
+**Staleness checks at every session start:**
+
+Time-sensitive fields (availability, active notice period, salary anchors)
+are checked at the start of every session. Fields that are stale beyond their
+review cycle are flagged and re-confirmed before Phase 0 begins.
 
 ---
 

@@ -28,7 +28,76 @@
   },
   "workflow": {
     "phase_count": 8,
-    "first_use": "run_initialisation_flow_before_phase_0_if_no_profile_exists",
+    "first_use": {
+      "trigger": "no_profile_exists_or_user_requests_rebuild",
+      "steps": [
+        {
+          "step": 0,
+          "name": "Document and Link Detection",
+          "description": "Always runs first before any questions are asked",
+          "actions": [
+            "scan_session_for_uploaded_files_pdf_docx_text",
+            "scan_opening_message_for_urls_linkedin_github_portfolio",
+            "fetch_each_url_with_web_fetch",
+            "extract_profile_fields_from_each_source",
+            "build_preliminary_field_map_extracted_partial_not_found"
+          ],
+          "extraction_sources": {
+            "cv_resume": ["name", "email", "phone", "linkedin", "portfolio", "location", "education", "certifications", "work_history_to_key_evidence", "tools_to_tools_stack", "languages"],
+            "linkedin_url": ["name", "headline_to_positioning", "experience_to_key_evidence", "education", "skills_to_tools_stack", "certifications", "contact"],
+            "github_url": ["repos", "languages", "projects_to_portfolio_assets", "tools_to_tools_stack"],
+            "portfolio_url": ["bio_to_positioning", "projects_to_key_evidence", "contact"],
+            "inline_text": "extract_any_usable_data_point_from_opening_message"
+          }
+        },
+        {
+          "step": 1,
+          "name": "Present Extraction Results",
+          "description": "Show what was found for confirmation. Skip if no sources provided.",
+          "format": "extracted_confirmed_partial_notfound_sections",
+          "user_action": "CONFIRM or list corrections"
+        },
+        {
+          "step": 2,
+          "name": "Gap-Fill Questions",
+          "description": "Ask only for fields not extracted or not confirmed. Never re-ask confirmed fields.",
+          "fields": "static_fields_dynamic_fields_compensation_fields",
+          "minimum_questions": 0,
+          "maximum_questions": 25
+        },
+        {
+          "step": 3,
+          "name": "Profile Confirmation and Sign-Off",
+          "description": "Present complete profile. Apply scoring gate (5 required). Write to profile file on score 5.",
+          "scoring_gate": true,
+          "required_score": 5,
+          "output_file": "references/applicant-profile-template.md"
+        },
+        {
+          "step": 4,
+          "name": "Returning Session Staleness Check",
+          "description": "For existing profiles only. Checks time-sensitive fields at every session start.",
+          "stale_fields": {
+            "availability": "re_confirm_every_session_do_not_use_value_older_than_2_weeks",
+            "salary_anchors": "flag_if_source_date_older_than_6_months",
+            "active_engagement": "confirm_still_active_and_end_date_unchanged"
+          }
+        },
+        {
+          "step": 5,
+          "name": "Per-Application Profile Update Protocol",
+          "description": "Runs during workflow at Phase 3 and Phase 7. Keeps profile current across applications.",
+          "triggers": {
+            "after_phase_3": ["portfolio_url_updated", "new_salary_market_confirmed", "availability_changed", "language_level_updated", "new_tool_added"],
+            "after_phase_7_branch_a": "log_submitted_update_salary_anchors_if_offer",
+            "after_phase_7_branch_b": "log_withdrawn_with_reason_flag_recurring_gap_patterns",
+            "after_phase_7_branch_c": "log_rejected_identify_gap_source_suggest_profile_adjustment",
+            "mid_session_document_upload": "run_step_0_extraction_on_new_source_surface_diffs"
+          },
+          "consent_required": "APPROVE_UPDATE_tier_2_before_writing_any_change"
+        }
+      ]
+    },
     "phases": [
       {
         "id": 0,

@@ -1,12 +1,38 @@
 # Applicant Profile Template
 # Version: 1.0.0 | Generic Universal Edition
 # Central source of truth for all job application sessions.
-# Complete this file during the First-Use Setup Protocol in SKILL.md.
-# Update dynamic fields when triggered — see update logic per field.
-# The SESSION LOG (separate) holds application-specific outputs such as
-# gap statements, cover letter drafts, and application outcomes.
-# This file holds the candidate's truths only. Do not write session
-# outputs into this file.
+#
+# HOW THIS PROFILE GETS POPULATED:
+# The skill populates this file through the First-Use Setup Protocol (SKILL.md).
+# Step 0 of that protocol detects and extracts from any uploaded documents or
+# provided links BEFORE asking any questions manually. Provide as many of the
+# following as you have — the skill will extract what it can and only ask for
+# fields it could not find:
+#
+#   Recommended inputs (provide any combination):
+#   - CV or resume as PDF or DOCX (most complete single source)
+#   - LinkedIn profile public URL (linkedin.com/in/[your-handle])
+#   - GitHub profile URL (github.com/[your-handle])
+#   - Personal website or portfolio URL
+#   - Behance, Dribbble, or other creative portfolio URL
+#   - Paste your professional bio or summary directly into the chat
+#
+#   If you provide a CV and LinkedIn URL, most static and dynamic fields
+#   can be populated automatically with zero manual typing required.
+#
+# HOW THIS PROFILE GETS UPDATED:
+# After Phase 3 (Clarifying Intake) and after Phase 7 (Post-Submission Loop),
+# the skill checks for new information that differs from the current profile
+# and offers to update specific fields via APPROVE UPDATE. Updates are never
+# written silently — every change requires explicit user approval.
+#
+# Time-sensitive fields (availability, salary anchors) are checked for
+# staleness at every session start. Fields older than their review cycle
+# are flagged and re-confirmed before the session proceeds.
+#
+# The SESSION LOG (separate from this file) holds application-specific
+# outputs: gap statements, cover letter drafts, and application outcomes.
+# Do not write session outputs into this profile — it holds truths only.
 
 ---
 ## FIELD DEPENDENCY MAP
