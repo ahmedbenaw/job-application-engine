@@ -101,7 +101,7 @@ flowchart TB
   %% ── A0 — CAPABILITY DETECTION ────────────────────────
   subgraph CAP["  A0 · Capability Detection"]
     direction LR
-    A0_PW["Playwright\nDisclosure"]:::autonode
+    A0_PW["Playwright\nDisclosure"]:::step
     A0_CONF{Capability Map\nConfirmed?}:::gate
     A0_PT["Probe Tools &\nConnections"]:::step
     A0_CM["Build\nCapability Map"]:::step
@@ -206,7 +206,7 @@ flowchart TB
     direction LR
     P6_SC{Save to\nCloud 2?}:::gate
     P6_CS2["Cloud\nSave 2"]:::storage
-    P6_BF["Browser\nForm Fill"]:::autonode
+    P6_BF["Browser\nForm Fill"]:::danger
     P6_AS["Application\nSubmit"]:::danger
     P6_G{Governance\nScore 5?}:::gate
     P6_SQ["Sequential\nChecks"]:::step
@@ -226,7 +226,7 @@ flowchart TB
     P7_A["Branch A\nSubmitted"]:::branchA
     P7_B["Branch B\nWithdrawn"]:::branchB
     P7_C["Branch C\nRejected"]:::branchC
-    P7_CR["Calendar\nReminder"]:::autonode
+    P7_CR["Calendar\nReminder"]:::step
     P7_ES["Email\nto Self"]:::step
     P7_G{Post-Submission\nScore 5?}:::gate
     P7_OB -- Submitted --> P7_A
@@ -241,7 +241,7 @@ flowchart TB
 
   %% ── SESSION END ──────────────────────────────────────
   NEXT([" 🔄 Next Discovery "]):::entry
-  DONE([" ⏹ Session Close "]):::endnode
+  DONE([" ⏹ Session Close "]):::entry
   P7_G -- "Yes · Branch A" --> NEXT
   NEXT -. "back to P0" .-> PH0
   P7_G -- "Yes · B or C" --> DONE
@@ -250,7 +250,7 @@ flowchart TB
   subgraph LEGEND["  Legend — Consent Tiers · separate from scoring"]
     direction LR
     LL1["⚡ Tier 1 — Auto\nRead-only · no gate"]:::step
-    LL2["📄 Tier 2 — APPROVE\nReversible write"]:::storage
+    LL2["📄 Tier 2 — APPROVE\nReversible write"]:::step
     LL3["🚀 Tier 3 — APPROVE PHRASE\nIrreversible · full preview\nScore ≠ Approval"]:::danger
     LLG{Score Gate\n1–5 · need 5}:::gate
     LLS([Session\nStart/End]):::entry
@@ -258,7 +258,6 @@ flowchart TB
 
   %% ── STYLES — light mode ──────────────────────────────
   classDef entry    fill:#ccfbf1,stroke:#0d9488,stroke-width:2px,color:#134e4a,font-weight:bold
-  classDef endnode  fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f,font-weight:bold
   classDef step     fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e
   classDef autonode fill:#fff7ed,stroke:#ea580c,stroke-width:1.5px,color:#7c2d12
   classDef gate     fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d,font-weight:bold
@@ -272,13 +271,14 @@ flowchart TB
 
 | Symbol | Meaning |
 |--------|---------|
-| 🟢 Teal pill | Session start / end |
+| 🟢 Teal pill | Session start **and** end — both `Session Start` and `Session Close` |
 | 🟩 Green diamond | Scoring gate — 5/5 required · loops back on fail |
-| 🟦 Blue rectangle | Process step — auto-executes |
-| 🟧 Orange rectangle | Automation node — MCP or Tier 3 `APPROVE PHRASE` |
+| 🟦 Blue rectangle | Process step — auto-executes · also Tier 2 reversible actions |
+| 🟧 Orange rectangle | Automation node — active MCP or Tier 3 `APPROVE PHRASE` (e.g. `APPROVE SEND`) |
 | 🟥 Red rounded pill | **Mismatch halt** — workflow stops entirely |
-| 🟣 Purple rectangle | File storage — local download always before cloud |
-| 🔴 Light-red rectangle | Irreversible action — `APPROVE SUBMIT` / `APPROVE FILL` |
+| 🟣 Purple rectangle | File storage — local download always before cloud save |
+| 🔴 Light-red rectangle | Irreversible action — `APPROVE SUBMIT` and `APPROVE FILL` |
+| `- -` Dashed arrow | Loop back to Phase 0 after successful submission |
 | `- -` Dashed arrow | Loop back to Phase 0 after successful submission |
 
 ---
