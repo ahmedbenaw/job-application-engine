@@ -1,6 +1,6 @@
 ---
 name: job-application-engine
-version: 2.1.0
+version: 2.1.1
 edition: generic-universal
 author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect
 description: |
@@ -22,6 +22,11 @@ compatibility:
   platforms: [Claude.ai, Claude CoWork, Manus]
   external_dependencies: none
 changelog:
+  - version: 2.1.1
+    date: 2026-04-25
+    notes: |
+      Repo-wide audit release: README diagram legend reconciled with runtime nodes;
+      release/version metadata normalized to v2.1.1; tag/release alignment cleanup.
   - version: 2.1.0
     date: 2026-04-25
     notes: |
@@ -69,7 +74,7 @@ All 8 phases are mandatory and sequential. Every phase ends with a user
 scoring gate. A score of 5 out of 5 is required to proceed. A score below 5
 triggers a revision loop within the same phase before advancing.
 
-**Execution modes (v2.1.0):** On **Claude CoWork**, the skill supports `agent_supported` (default) and optional `cowork_autonomous` — see `docs/EXECUTION_MODES.md` and `rules.json` `execution_modes`. Mode 2 never bypasses phases or consent tiers; it re-anchors after each host execution chunk. On **Claude.ai** and **Manus**, only `agent_supported` applies.
+**Execution modes (v2.1.x):** On **Claude CoWork**, the skill supports `agent_supported` (default) and optional `cowork_autonomous` — see `docs/EXECUTION_MODES.md` and `rules.json` `execution_modes`. Mode 2 never bypasses phases or consent tiers; it re-anchors after each host execution chunk. On **Claude.ai** and **Manus**, only `agent_supported` applies.
 
 ---
 
@@ -1021,7 +1026,7 @@ immediately for any local download step.
 
 ---
 
-## Automation Layer — v2.0 Addition (v2.1.0: A14–A16 for execution modes)
+## Automation Layer — v2.0 Addition (v2.1.x: A14–A16 for execution modes)
 
 This section is purely additive to the baseline eight-phase workflow shipped in
 the Generic Universal edition. All 8 phases and their gates remain unchanged.

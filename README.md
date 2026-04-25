@@ -1,11 +1,11 @@
 # Job Application Engine
-**Version 2.1.0 — Generic Universal Edition**
+**Version 2.1.1 — Generic Universal Edition**
 
 **Author: _Ahmed AW (Ben Zayed) | Product Leader & Builder_**
 
 An end-to-end AI-powered job application system for Claude, Claude CoWork, and Manus.
 Supports two **session entry** modes: Mode A discovers matching roles across 10 platforms;
-Mode B takes a CV and job URL directly and applies without discovery. **v2.1.0** adds two **execution** modes on CoWork — `agent_supported` (default) and optional `cowork_autonomous` with mandatory re-anchor to phase governance — see [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md). Runs an 8-phase
+Mode B takes a CV and job URL directly and applies without discovery. **v2.1.x** adds two **execution** modes on CoWork — `agent_supported` (default) and optional `cowork_autonomous` with mandatory re-anchor to phase governance — see [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md). Runs an 8-phase
 workflow with a native automation layer executing **16** declared actions (A01–A16) on the user's
 behalf under a three-tier consent system. Job board and ATS platform MCPs are detected
 automatically at session start — if none are connected, the skill searches online and
@@ -18,7 +18,7 @@ recommends available options.
 
 ## Quick Start
 
-1. [Download `JAE-v2.1.0-Generic-Universal-2026-04-25.zip` from the v2.1.0 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0)
+1. [Download `JAE-v2.1.1-Generic-Universal-2026-04-25.zip` from the v2.1.1 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.1)
 2. Install the skill: **Claude.ai / Claude CoWork** — **Customize → Skills → Create Skill → Upload ZIP**. **Manus** — **Skills → + Add → Upload** or **Import from GitHub** (see [Platform Setup](#platform-setup)).
 3. Choose your entry mode:
 
@@ -39,7 +39,7 @@ The engine runs an 8-phase workflow governed by scoring gates. Every phase produ
 output, presents it for review, and requires a score of 5 out of 5 before advancing.
 A score below 5 triggers a revision loop within the same phase.
 
-**Execution modes (CoWork only; v2.1.0):** Default **`agent_supported`**. Optional **`cowork_autonomous`** uses larger host execution chunks with **`APPROVE COCHUNK`** (Tier 2), then **A15** re-anchor and **A16** drift check — phases and consent tiers are never bypassed. Details: [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md).
+**Execution modes (CoWork only; v2.1.x):** Default **`agent_supported`**. Optional **`cowork_autonomous`** uses larger host execution chunks with **`APPROVE COCHUNK`** (Tier 2), then **A15** re-anchor and **A16** drift check — phases and consent tiers are never bypassed. Details: [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md).
 
 **A0 — Capability Detection:** probes all tools and MCP connections at session start,
 including a dedicated scan of 10 job board and ATS platform MCPs (LinkedIn, Indeed,
@@ -87,7 +87,7 @@ validity, and salary field type. No package is presented with a known open check
 discovery), withdrawn (logs reason, refines next pass), rejected (identifies gap,
 recalibrates search).
 
-**Automation Layer (v2.1.0):** 16 declared automations (A01–A16) execute on the
+**Automation Layer (v2.1.x):** 16 declared automations (A01–A16) execute on the
 user's behalf under a three-tier consent system. A14–A16 orchestrate CoWork autonomous chunks and governance re-anchor only when applicable. Scoring gates evaluate quality.
 Approval gates authorise real-world actions. These are entirely separate systems.
 
@@ -283,7 +283,7 @@ flowchart TB
 | 🟢 Teal pill | Session start **and** end — both `Session Start` and `Session Close` |
 | 🟩 Green diamond | Scoring gate — 5/5 required · loops back on fail |
 | 🟦 Blue rectangle | Process step — auto-executes · also Tier 2 reversible actions |
-| 🟧 Orange rectangle | Automation node — active MCP or Tier 3 `APPROVE PHRASE` (e.g. `APPROVE SEND`) |
+| 🟧 Orange rectangle | Automation/special runtime node (e.g. MCP discovery, artifact fallback, or consent-triggered action) |
 | 🟥 Red rounded pill | **Mismatch halt** — workflow stops entirely |
 | 🟣 Purple rectangle | File storage — local download always before cloud save |
 | 🔴 Light-red rectangle | Irreversible action — `APPROVE SUBMIT` and `APPROVE FILL` |
@@ -356,7 +356,7 @@ job-application-engine/
 
 This method makes the skill available across conversations that support Skills.
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.1)
 2. In Claude (web): profile → **Customize** → **Skills** → **Create Skill** → upload the ZIP  
    On **mobile**, use the path your Claude app exposes for **Skills**; if Skills are not exposed, use **Project Knowledge** fallback below.
 3. The skill is active where Skills apply — no separate project is required for that mode.
@@ -389,14 +389,14 @@ Upload the same file set from the clone into Project Knowledge as above.
 
 **Primary — Agent Skills install**
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.1)
 2. **Customize → Skills → Create Skill** → upload the ZIP (labels per current CoWork UI).
 3. The skill is available to CoWork agents that load Skills.
 4. Open a **New Project** and run the workflow. **Parallelism** for Phases 0, 1, and Phase 3 salary research is **defined in this skill** (`SKILL.md`, `rules.json`); CoWork **allows** parallel Tier-1 work — the product does not auto-route phases without those rules.
 
 **Alternative — Workspace file upload** *(if Skills are unavailable on your tier)*
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.1)
 2. CoWork → **New Project** → **Upload**
 3. Upload **all** files from the extracted ZIP (root files plus the entire `references/` tree — same set `git ls-files` would list from this repo). Preserve folder hierarchy.
 4. CoWork reads `rules.json` as the workflow instruction source.
@@ -437,7 +437,7 @@ Install via **Skills** on both hosts when available. Two patterns — see [docs/
 
 **Primary — Agent Skills (current product)**
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0) *or* use **Import from GitHub** with  
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.1) *or* use **Import from GitHub** with  
    `https://github.com/ahmedbenaw/job-application-engine`
 2. In Manus: **Skills** tab → **+ Add** → **Upload a skill** (`.zip` / `.skill`) **or** **Import from GitHub** (public repo URL above).
 
@@ -512,9 +512,9 @@ review cycle are flagged and re-confirmed before Phase 0 begins.
 
 ---
 
-## Automation Layer (v2.1.0)
+## Automation Layer (v2.1.1)
 
-Version 2.x adds a native execution layer beneath the 8-phase workflow. **v2.1.0** adds A14–A16 for CoWork execution-mode orchestration. All phases,
+Version 2.x adds a native execution layer beneath the 8-phase workflow. **v2.1.x** adds A14–A16 for CoWork execution-mode orchestration. All phases,
 gates, and invariants from v1.0 are unchanged. The automation layer is purely additive.
 
 ### 16 Registered Automations
@@ -643,4 +643,4 @@ MIT. See `LICENSE` for full terms.
 
 ## Changelog
 
-See `CHANGELOG.md` for the full version history. Current version: **2.1.0**.
+See `CHANGELOG.md` for the full version history. Current version: **2.1.1**.

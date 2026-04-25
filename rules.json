@@ -1,7 +1,7 @@
 {
   "skill": {
     "name": "job-application-engine",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "edition": "generic-universal",
     "author": "Ahmed Ossama | Product Leader, Builder & Venture Management Architect",
     "external_dependencies": "none"
@@ -349,7 +349,7 @@
     "execution_modes_doc": "docs/EXECUTION_MODES.md"
   },
   "automation_layer": {
-    "version": "2.1.0",
+    "version": "2.1.1",
     "added": "2026-04-24",
     "principle": "additive_only_v1_workflow_unchanged",
     "capability_detection": {

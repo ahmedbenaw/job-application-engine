@@ -2,7 +2,7 @@
 
 README and `SKILL.md` **summarize** this document; they **must not** contradict it.
 
-**Execution modes (v2.1.0):** [EXECUTION_MODES.md](EXECUTION_MODES.md) — `agent_supported` (default) vs `cowork_autonomous` (CoWork, opt-in).  
+**Execution modes (v2.1.x):** [EXECUTION_MODES.md](EXECUTION_MODES.md) — `agent_supported` (default) vs `cowork_autonomous` (CoWork, opt-in).  
 **Scope law:** [MANDATORY_EXCLUSIONS.md](MANDATORY_EXCLUSIONS.md).
 
 ---

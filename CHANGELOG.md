@@ -5,6 +5,23 @@ Format: Most recent changes listed first within each version.
 
 ---
 
+## [2.1.1] — 2026-04-25 | Repo audit reconciliation + release alignment
+
+**Updated — README.md**
+
+- Reconciled workflow legend semantics: orange nodes now described as automation/runtime nodes (not only Tier 3 consent actions), matching actual A0/A14–A16 and fallback nodes in the diagram.
+- Version/install metadata normalized to **v2.1.1** release links and ZIP naming.
+
+**Updated — SKILL.md · rules.json · automation-registry.json**
+
+- Version fields normalized to **2.1.1** (`SKILL.md` front matter, `rules.json` `skill.version` + `automation_layer.version`, `automation-registry.json` `registry_version`).
+
+**Added — release note for this publish**
+
+- `docs/GITHUB_RELEASE_v2.1.1.md` with highlights, install path, and asset/SHA section.
+
+---
+
 ## [2.1.0] — 2026-04-25 | Dual execution modes + A14–A16 + policy alignment
 
 **Added — Execution modes (CoWork)**

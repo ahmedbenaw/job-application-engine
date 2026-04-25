@@ -1,4 +1,4 @@
-# Execution modes — JAE v2.1.0
+# Execution modes — JAE v2.1.x
 
 This document is **normative** for how the skill may combine **governance** (eight phases, scoring gates, consent tiers) with **host execution** (Claude / CoWork / Manus) without drifting.
 
