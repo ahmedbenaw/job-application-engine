@@ -18,7 +18,7 @@ recommends available options.
 
 ## Quick Start
 
-1. [Download JAE-v2.0-Generic-Universal.zip from the v2.0.0 Release](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
+1. [Download `JAE-v2.0-Generic-Universal-2026-04-25.zip` from the v2.0.0 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
 2. In Claude: go to **Customize → Skills → Create Skill → Upload ZIP**
 3. Choose your entry mode:
 
