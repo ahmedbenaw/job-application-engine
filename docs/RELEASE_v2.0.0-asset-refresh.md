@@ -16,7 +16,7 @@ This download is a **rebuilt skill package** from `master` (see tag `v2.0.0`), a
 
 ### What was missing from the 2026-04-24 zip (now included)
 
-Tag **`v2.0.0`** matches the `master` commit at the time of the last asset publish. Compare from the first v2.0.0 code tip: [f950ff3…<current tag>](https://github.com/ahmedbenaw/job-application-engine/compare/f950ff387e63c4faaad3367ca8dc2409e6b6e1ba...e1f1697) (link uses known SHAs; update if tag moves again).
+Tag **`v2.0.0`** matches the `master` commit at the time of the last asset publish (**b4ddc7c**). Compare from the first v2.0.0 code tip: [f950ff3…b4ddc7c](https://github.com/ahmedbenaw/job-application-engine/compare/f950ff387e63c4faaad3367ca8dc2409e6b6e1ba...b4ddc7c).
 
 1. **40e0027** — Update release links to v2.0.0 tag URL
 2. **c9f2a10** — Redesign workflow diagram (dark theme, PNG-matched palette)
@@ -27,6 +27,7 @@ Tag **`v2.0.0`** matches the `master` commit at the time of the last asset publi
 7. **4bde2be** — Fix diagram legend violations (five node class corrections)
 8. **320c78b** — Revise author information in README.md
 9. **e1f1697** — README Quick Start: name the dated release ZIP
+10. **b4ddc7c** — This file: in-repo copy of the v2.0.0 asset refresh release notes
 
 ### Product highlights (cross-reference with CHANGELOG)
 
