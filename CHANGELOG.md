@@ -39,7 +39,7 @@ Format: Most recent changes listed first within each version.
 
 ---
 
-## [2.0.0] — 2026-04-24 | Current version — all patches below are additive
+## [2.0.0] — 2026-04-24 | Baseline 2.0.0 — patches below are additive (superseded for install docs by 2.0.1)
 
 ---
 

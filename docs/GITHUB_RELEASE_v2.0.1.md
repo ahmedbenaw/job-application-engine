@@ -18,4 +18,4 @@ See [CHANGELOG.md](https://github.com/ahmedbenaw/job-application-engine/blob/mas
 
 Download **`JAE-v2.0.1-Generic-Universal-2026-04-25.zip`** from Assets (flat repo root for Skills upload).
 
-**SHA256:** `de02f42ea60430e8e65848d9cc4e5855cc47d7955071c097c28a717fb3eecd65`
+**SHA256 (git archive before upload):** `de02f42ea60430e8e65848d9cc4e5855cc47d7955071c097c28a717fb3eecd65` — verify against the digest shown on the release asset if they differ.
