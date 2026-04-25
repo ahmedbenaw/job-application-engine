@@ -1,7 +1,7 @@
 {
   "skill": {
     "name": "job-application-engine",
-    "version": "2.0.2",
+    "version": "2.1.0",
     "edition": "generic-universal",
     "author": "Ahmed Ossama | Product Leader, Builder & Venture Management Architect",
     "external_dependencies": "none"
@@ -297,6 +297,44 @@
     "always_update_excluded_companies_log_after_discovery",
     "always_update_salary_anchors_after_offer_data"
   ],
+  "execution_modes": {
+    "default": "agent_supported",
+    "docs": {
+      "execution_modes": "docs/EXECUTION_MODES.md",
+      "mandatory_exclusions": "docs/MANDATORY_EXCLUSIONS.md",
+      "platform_capabilities": "docs/platform-capabilities.md"
+    },
+    "agent_supported": {
+      "id": "agent_supported",
+      "label": "Mode 1 — agent-supported",
+      "applies_to": ["Claude.ai", "Claude_CoWork", "Manus"],
+      "description": "Default. Full A0 and Phases 0–7 with scoring gates and consent tiers; conservative orchestration."
+    },
+    "cowork_autonomous": {
+      "id": "cowork_autonomous",
+      "label": "Mode 2 — CoWork autonomous (opt-in)",
+      "applies_to": ["Claude_CoWork"],
+      "governance_anchor": "agent_supported_phase_workflow_and_skill_rules",
+      "must_follow_phases": true,
+      "must_follow_skill_and_rules": true,
+      "drift_triggers": [
+        "phase_boundary_without_completed_gate",
+        "conflict_with_invariants",
+        "irreversible_action_without_tier2_or_tier3",
+        "tool_output_inconsistent_with_stated_objective",
+        "suspected_injection_or_untrusted_instruction"
+      ],
+      "on_drift": "reanchor_to_agent_supported_checkpoint_pause_and_reconcile",
+      "irreversible_actions_policy": "tier2_tier3_unchanged_by_default",
+      "opt_in_phrases_exact": [
+        "JAE MODE: COWORK_AUTONOMOUS",
+        "I opt in to JAE CoWork autonomous mode with phase governance"
+      ],
+      "opt_out_phrases_exact": ["JAE MODE: AGENT_SUPPORTED"],
+      "after_each_autonomous_chunk": ["A15", "A16"],
+      "related_automations": ["A14", "A15", "A16"]
+    }
+  },
   "platform_notes": {
     "claude_ai": "sequential_all_phases_wait_for_scoring_gate_in_conversation_tools_mcp_per_host_policy",
     "claude_cowork": "phases_0_1_salary_research_parallel_tier1_subagents_phases_2_to_7_sequential_tier2_tier3_main_thread_only",
@@ -307,10 +345,11 @@
     "combined": "alias_of_hybrid_chat_review_for_backward_compat",
     "manus": "PRIMARY: skills_tab_add_upload_zip_or_skill_or_import_from_github_public_repo_FALLBACK: workspace_file_upload_or_paste_rules_json_as_session_instruction",
     "canonical_platform_doc": "docs/platform-capabilities.md",
-    "mandatory_exclusions_doc": "docs/MANDATORY_EXCLUSIONS.md"
+    "mandatory_exclusions_doc": "docs/MANDATORY_EXCLUSIONS.md",
+    "execution_modes_doc": "docs/EXECUTION_MODES.md"
   },
   "automation_layer": {
-    "version": "2.0.0",
+    "version": "2.1.0",
     "added": "2026-04-24",
     "principle": "additive_only_v1_workflow_unchanged",
     "capability_detection": {
@@ -338,7 +377,7 @@
         "gate": "preview_then_APPROVE_ACTION_NAME",
         "approval_required": true,
         "approval_format": "APPROVE [ACTION_NAME]",
-        "valid_responses": ["APPROVE CREATE", "APPROVE SAVE", "APPROVE CALENDAR"],
+        "valid_responses": ["APPROVE CREATE", "APPROVE SAVE", "APPROVE CALENDAR", "APPROVE COCHUNK"],
         "invalid_responses": ["yes", "ok", "5", "score_of_5", "any_paraphrase"],
         "note": "approval_and_scoring_are_separate_systems_never_conflate"
       },

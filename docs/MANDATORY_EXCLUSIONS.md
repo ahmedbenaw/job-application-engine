@@ -1,47 +1,62 @@
-# Mandatory exclusions — what JAE does **not** trigger
+# Mandatory scope — what JAE does and does not claim
 
-This file is **normative**. If a capability is not listed here as **in scope** in [platform-capabilities.md](platform-capabilities.md) or in `automation-registry.json`, the skill **must not** imply the model runs it. Silence is forbidden: excluded product features are listed explicitly.
+This file is **normative**. The skill must be honest about which actions are **JAE-declared** (`automation-registry.json`), which are **host-governed** (Claude, CoWork, Manus, OS), and which are **never** allowed. Silence is forbidden for commonly confused capabilities.
 
----
-
-## 1. Unattended scheduling and background cron
-
-**Excluded:** Timer-based, hourly/daily, or fully unattended workflows that run without a live user session.
-
-**Why:** No automation ID in `automation-registry.json` defines unattended execution. Tier 2/3 actions require explicit in-session consent. Phase 7 calendar-related automations (e.g. A10) are **in-session, consent-gated** only.
-
-**User outside JAE:** May use host product schedulers (Claude, CoWork, Manus, OS) manually; JAE does not configure them.
+**Related:** [platform-capabilities.md](platform-capabilities.md), [EXECUTION_MODES.md](EXECUTION_MODES.md), [SKILL.md](../SKILL.md), [rules.json](../rules.json).  
+CoWork product context (host-dependent): [Claude CoWork (Anthropic)](https://www.anthropic.com/product/claude-cowork), [Cowork (claude.com)](https://claude.com/product/cowork).
 
 ---
 
-## 2. OS-level “computer use” (generic mouse/keyboard / arbitrary desktop apps)
+## A. Hard prohibited (never, regardless of user consent in chat)
 
-**Excluded:** Undeclared OS automation, generic desktop control, or any action not expressed as a declared automation with tools/MCP named in the registry.
+- **Inventing automations:** Claiming to run an action as a JAE automation when no `Axx` entry exists in `automation-registry.json` with a matching scope.
+- **Bypassing invariants** in [rules.json](../rules.json) `invariants` and `SKILL.md` non-negotiables (e.g. application text before Phase 3, hidden mismatch).
+- **Hidden subagents:** Spawning or routing to agents or parallel threads not described in `SKILL.md` and `platform_routing` in [rules.json](../rules.json). CoWork Tier-1 parallelism is **read-only and skill-authored** only; **Tier 2/3 never on subagents.**
+- **Irreversible actions without consent:** Submit/send/fill and other Tier 2/3 actions without the **exact** approval path defined in the skill and registry.
+- **Scoring = approval:** Using a phase score, “yes,” or paraphrase as a substitute for Tier 2/3 approval phrases.
+- **Credential persistence:** Storing or replaying the user’s job-platform or email credentials outside the session rules in `automation_layer`.
 
-**Why:** Scope is locked to `automation-registry.json`. Browser paths are **BrowserBase MCP (primary)** and **Playwright MCP (secondary)** with disclosure — not open-ended “computer use.”
-
----
-
-## 3. Named browser surfaces (e.g. “Claude in Chrome”) as a separate JAE primitive
-
-**Resolution (mandatory):** JAE does **not** name or branch on vendor-specific browser products (e.g. Chrome) as a **distinct execution primitive**. Browser automation in this skill is **MCP-based** only, as declared in `SKILL.md` (A0) and `automation-registry.json` (`browser_automation`). If the host exposes browser capability through a bundled browser experience, the model maps it to **active BrowserBase/Playwright MCP** in the Capability Map — not to a separate JAE code path.
-
----
-
-## 4. Hidden or undeclared subagents
-
-**Excluded:** Spawning agents not described by platform routing. CoWork Tier 1 parallelism is **only** for read-only work as specified in `SKILL.md` and `rules.json` (`platform_routing.claude_cowork.tier_1`). Irreversible (Tier 2/3) actions **never** run on subagents.
+JAE is a **custom skill**, not a host product. It does not imply Anthropic (or any vendor) endorses this repository.
 
 ---
 
-## 5. Capabilities implied by marketing but not in registry
+## B. Host-capability-gated (allowed only with host + JAE law)
 
-Any host feature (e.g. long-running VM jobs, generic file system sync, third-party OAuth flows not covered by listed MCPs) is **out of scope** unless added to `automation-registry.json` with tier, approval phrase, and CHANGELOG entry.
+These are **not** “excluded from CoWork.” They are **excluded as unsupervised or ungoverned JAE claims.** When the user opts into `cowork_autonomous` in [EXECUTION_MODES.md](EXECUTION_MODES.md) and the **host** exposes the capability, JAE may **orchestrate** work using the host’s product features **only** while:
+
+- **Phases 0–7, scoring gates, and consent tiers remain the law of the session.**
+- After each autonomous **chunk**, the skill **re-anchors** to the agent-supported workflow (current phase, checklist, invariants) per `SKILL.md` and A14–A16 in `automation-registry.json`.
+- The user respects the product’s own approval UI, folder access, and plan limits (see product pages; availability is **host/plan-dependent**).
+
+**Examples of host-governed surface (wording, not a promise of availability):** desktop/connector/automation features that the **Claude** app or CoWork exposes; computer-use-style interaction where the product provides it, subject to that product’s consent and safety model.
+
+**JAE must not** claim to configure OS-level crons, external schedulers, or headless **unattended** jobs **as a named JAE automation** unless a future registry entry explicitly defines them.
+
+---
+
+## C. Registry-native (JAE must declare)
+
+Any action presented as a **JAE-executed** automation (A01–A16, etc.) must appear in [automation-registry.json](../automation-registry.json) with **phase, tier, approval phrase, and scope boundary.** Browser automation in JAE remains **BrowserBase (primary) / Playwright (secondary)** per registry — not a separate “Chrome” vendor primitive; map host-bundled browser experiences to the Capability Map, not a forked JAE code path (see D).
+
+If a new host feature is needed in scope, add it to the registry and `CHANGELOG.md` in a versioned release.
+
+---
+
+## D. Named browser products (not separate JAE primitives)
+
+JAE does **not** branch on vendor-specific browser brand names (e.g. a particular browser) as a **distinct** execution path. The Capability Map uses **MCP and host-reported** tool status. Host marketing names for connectors are mapped to the same JAE rules.
+
+---
+
+## E. Unattended scheduling (strict meaning)
+
+**JAE does not** define or trigger **timer-based, fully unattended** workflows that have **no** live user session. In-session **calendar (A10)** and host **scheduled tasks** the user sets **outside** JAE are outside this skill’s registry unless explicitly added later.
 
 ---
 
 ## Cross-references
 
-- Canonical host behavior: [platform-capabilities.md](platform-capabilities.md)
-- Skill law: [SKILL.md](../SKILL.md) — Platform Execution Notes, A0, Platform-Aware Automation Routing
-- Machine-readable routing: [rules.json](../rules.json) — `platform_notes`, `platform_routing`, `automation_layer`
+- [EXECUTION_MODES.md](EXECUTION_MODES.md) — `agent_supported` vs `cowork_autonomous`
+- [platform-capabilities.md](platform-capabilities.md)
+- [SKILL.md](../SKILL.md) — Platform Execution Notes, A0, execution mode gate
+- [rules.json](../rules.json) — `execution_modes`, `platform_routing`, `automation_layer`

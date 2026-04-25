@@ -1,5 +1,5 @@
 {
-  "registry_version": "2.0.2",
+  "registry_version": "2.1.0",
   "created": "2026-04-24",
   "author": "Ahmed Ossama | Product Leader, Builder & Venture Management Architect",
   "scope_rule": "Only automations declared in this registry may be triggered by the skill. No automation may be improvised or added during a session. Scope is locked at this file.",
@@ -239,13 +239,55 @@
       ],
       "output": "list_of_available_mcps_with_links_and_capability_description",
       "scope_boundary": "Search and recommendation only. Does not install, connect, or configure any MCP. User must connect MCPs themselves via their platform settings."
+    },
+    {
+      "id": "A14",
+      "name": "CoWork — Autonomous host execution chunk (Mode 2)",
+      "phase": "All phases (when execution mode is cowork_autonomous)",
+      "description": "Runs a bounded multi-step host execution block in Claude CoWork under user consent, strictly scoped to the current phase objective. Does not replace scoring gates or Tier 2/3 approval for write actions inside the chunk. Each chunk must be followed by A15 and A16.",
+      "tool_required": null,
+      "mcp_required": null,
+      "consent_tier": 2,
+      "approval_phrase": "APPROVE COCHUNK",
+      "reversible": true,
+      "activation_condition": "only_when_session_execution_mode_is_cowork_autonomous_on_Claude_CoWork",
+      "fallback": "Decompose the work into standard agent_supported steps with manual guidance",
+      "scope_boundary": "One discrete chunk of host work aligned to a single, stated phase sub-goal. No application submit (A05), no Tier-3 email send, no browser fill (A04), no cloud save — those remain their respective automations. No parallel Tier-2/3 on subagents.",
+      "post_chunk_required": ["A15", "A16"]
+    },
+    {
+      "id": "A15",
+      "name": "Governance re-anchor checkpoint",
+      "phase": "All phases (after each A14 chunk in Mode 2; optional on user request in Mode 1)",
+      "description": "Read-only reconciliation: restate current phase, checklist status, invariants, and next allowed action. No host side effects.",
+      "tool_required": null,
+      "mcp_required": null,
+      "consent_tier": 1,
+      "approval_phrase": null,
+      "reversible": true,
+      "fallback": "N/A — can always run as narrative checkpoint",
+      "scope_boundary": "Does not perform writes. Does not advance phase. Confirms the session is still aligned with SKILL.md phase law before the next A14 chunk or step."
+    },
+    {
+      "id": "A16",
+      "name": "Drift and scope verification",
+      "phase": "All phases (after A15 in Mode 2; on ambiguity)",
+      "description": "Verifies that the last chunk did not cross a phase gate without a completed score, did not expand scope, and does not conflict with invariants. If fail: pause, present agent_supported checkpoint, user reconciles.",
+      "tool_required": null,
+      "mcp_required": null,
+      "consent_tier": 1,
+      "approval_phrase": null,
+      "reversible": true,
+      "fallback": "Escalate to full step-by-step agent_supported path",
+      "scope_boundary": "Read-only analysis and user-facing report. If irreversible or write action detected without proper tier, block and require normal consent flow."
     }
   ],
   "artifact_policy": {
     "present_files_inactive_fallback": "When present_files is INACTIVE in A0, follow SKILL.md section A0 — Mandatory artifact fallback: deliver full artifact content inline (monospace or structured text) and instruct the user to save manually. Never assume a host file-download primitive exists.",
     "canonical_docs": [
       "docs/platform-capabilities.md",
-      "docs/MANDATORY_EXCLUSIONS.md"
+      "docs/MANDATORY_EXCLUSIONS.md",
+      "docs/EXECUTION_MODES.md"
     ]
   },
   "out_of_scope_examples": [

@@ -1,12 +1,12 @@
 # Job Application Engine
-**Version 2.0.2 — Generic Universal Edition**
+**Version 2.1.0 — Generic Universal Edition**
 
 **Author: _Ahmed AW (Ben Zayed) | Product Leader, Builder & Venture Architect_**
 
 An end-to-end AI-powered job application system for Claude, Claude CoWork, and Manus.
-Supports two session entry modes: Mode A discovers matching roles across 10 platforms;
-Mode B takes a CV and job URL directly and applies without discovery. Runs an 8-phase
-workflow with a native automation layer executing 13 declared actions on the user's
+Supports two **session entry** modes: Mode A discovers matching roles across 10 platforms;
+Mode B takes a CV and job URL directly and applies without discovery. **v2.1.0** adds two **execution** modes on CoWork — `agent_supported` (default) and optional `cowork_autonomous` with mandatory re-anchor to phase governance — see [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md). Runs an 8-phase
+workflow with a native automation layer executing **16** declared actions (A01–A16) on the user's
 behalf under a three-tier consent system. Job board and ATS platform MCPs are detected
 automatically at session start — if none are connected, the skill searches online and
 recommends available options.
@@ -18,7 +18,7 @@ recommends available options.
 
 ## Quick Start
 
-1. [Download `JAE-v2.0.2-Generic-Universal-2026-04-25.zip` from the v2.0.2 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2)
+1. [Download `JAE-v2.1.0-Generic-Universal-2026-04-25.zip` from the v2.1.0 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0)
 2. Install the skill: **Claude.ai / Claude CoWork** — **Customize → Skills → Create Skill → Upload ZIP**. **Manus** — **Skills → + Add → Upload** or **Import from GitHub** (see [Platform Setup](#platform-setup)).
 3. Choose your entry mode:
 
@@ -38,6 +38,8 @@ recommends available options.
 The engine runs an 8-phase workflow governed by scoring gates. Every phase produces
 output, presents it for review, and requires a score of 5 out of 5 before advancing.
 A score below 5 triggers a revision loop within the same phase.
+
+**Execution modes (CoWork only; v2.1.0):** Default **`agent_supported`**. Optional **`cowork_autonomous`** uses larger host execution chunks with **`APPROVE COCHUNK`** (Tier 2), then **A15** re-anchor and **A16** drift check — phases and consent tiers are never bypassed. Details: [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md).
 
 **A0 — Capability Detection:** probes all tools and MCP connections at session start,
 including a dedicated scan of 10 job board and ATS platform MCPs (LinkedIn, Indeed,
@@ -85,8 +87,8 @@ validity, and salary field type. No package is presented with a known open check
 discovery), withdrawn (logs reason, refines next pass), rejected (identifies gap,
 recalibrates search).
 
-**Automation Layer (v2.0):** 13 declared automations (A01–A13) execute on the
-user's behalf under a three-tier consent system. Scoring gates evaluate quality.
+**Automation Layer (v2.1.0):** 16 declared automations (A01–A16) execute on the
+user's behalf under a three-tier consent system. A14–A16 orchestrate CoWork autonomous chunks and governance re-anchor only when applicable. Scoring gates evaluate quality.
 Approval gates authorise real-world actions. These are entirely separate systems.
 
 ---
@@ -98,6 +100,13 @@ flowchart TB
 
   %% ── SESSION START ─────────────────────────────────────
   START([" 🟢 Session Start "]):::entry
+
+  %% ── EXECUTION MODE (before A0; CoWork can opt in to cowork_autonomous) ──
+  subgraph EM["  Execution mode · before A0"]
+    direction TB
+    EM_SET["Set execution mode\ndefault agent_supported\nCoWork: opt-in autonomous"]:::step
+  end
+  START --> EM_SET
 
   %% ── A0 — CAPABILITY DETECTION (order matches SKILL.md A0) ──
   subgraph CAP["  A0 · Capability Detection"]
@@ -111,7 +120,7 @@ flowchart TB
     A0_PT --> A0_REC --> A0_CM --> A0_2A --> A0_BD --> A0_OK
     A0_OK -- No / revise --> A0_CM
   end
-  START --> A0_PT
+  EM_SET --> A0_PT
 
   %% ── SESSION ENTRY GATE ────────────────────────────────
   subgraph SEG["  Session Entry Gate"]
@@ -305,8 +314,9 @@ job-application-engine/
 │                                               8-phase engine + automation layer
 ├── rules.json                               ← Machine-readable workflow rules
 │                                               + automation layer bindings
-├── automation-registry.json                 ← All 13 declared automations
-│                                               (A01–A13) · scope-locked
+├── automation-registry.json                 ← All 16 declared automations
+│                                               (A01–A16) · scope-locked
+├── docs/                                    ← Canonical platform + scope + execution modes
 └── references/
     ├── applicant-profile-template.md        ← Central source of truth · fill first
     ├── cover-letter-templates.md            ← Both canonical templates
@@ -331,9 +341,10 @@ job-application-engine/
 
 **Canonical docs (read these — normative for the skill):**
 
-- [docs/platform-capabilities.md](docs/platform-capabilities.md) — Claude.ai, CoWork, Manus, hybrid patterns  
-- [docs/MANDATORY_EXCLUSIONS.md](docs/MANDATORY_EXCLUSIONS.md) — what JAE does **not** trigger (scheduling, OS computer-use, etc.)  
-- [docs/REMEDIATION_INVENTORY.md](docs/REMEDIATION_INVENTORY.md) — traceability of this documentation pass  
+- [docs/platform-capabilities.md](docs/platform-capabilities.md) — Claude.ai, CoWork, Manus, hybrid patterns, execution modes  
+- [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md) — `agent_supported` vs `cowork_autonomous`, re-anchor, opt-in phrases  
+- [docs/MANDATORY_EXCLUSIONS.md](docs/MANDATORY_EXCLUSIONS.md) — scope law (hard prohibited · host-gated · registry-native)  
+- [docs/REMEDIATION_INVENTORY.md](docs/REMEDIATION_INVENTORY.md) — traceability of documentation passes  
 
 > **Agent Skills (where the product offers them):** On **Claude.ai** and **Claude CoWork**, uploading this skill via the product’s **Skills** UI is the primary install path (exact menu labels depend on Anthropic’s current UI — see their documentation for your plan). Skills give **in-session** tool and MCP use within that product’s limits — not the same as every CoWork-class workspace feature. **Manus** supports **Skills** too: **Skills → + Add → Upload a skill** (`.zip` / `.skill`) or **Import from GitHub** using this repo’s public URL. Fallbacks below apply when Skills are unavailable or you prefer file-based loading.
 
@@ -345,7 +356,7 @@ job-application-engine/
 
 This method makes the skill available across conversations that support Skills.
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0)
 2. In Claude (web): profile → **Customize** → **Skills** → **Create Skill** → upload the ZIP  
    On **mobile**, use the path your Claude app exposes for **Skills**; if Skills are not exposed, use **Project Knowledge** fallback below.
 3. The skill is active where Skills apply — no separate project is required for that mode.
@@ -378,14 +389,14 @@ Upload the same file set from the clone into Project Knowledge as above.
 
 **Primary — Agent Skills install**
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0)
 2. **Customize → Skills → Create Skill** → upload the ZIP (labels per current CoWork UI).
 3. The skill is available to CoWork agents that load Skills.
 4. Open a **New Project** and run the workflow. **Parallelism** for Phases 0, 1, and Phase 3 salary research is **defined in this skill** (`SKILL.md`, `rules.json`); CoWork **allows** parallel Tier-1 work — the product does not auto-route phases without those rules.
 
 **Alternative — Workspace file upload** *(if Skills are unavailable on your tier)*
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2)
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0)
 2. CoWork → **New Project** → **Upload**
 3. Upload **all** files from the extracted ZIP (root files plus the entire `references/` tree — same set `git ls-files` would list from this repo). Preserve folder hierarchy.
 4. CoWork reads `rules.json` as the workflow instruction source.
@@ -398,7 +409,7 @@ git clone https://github.com/ahmedbenaw/job-application-engine.git
 
 Upload the clone into the workspace as above.
 
-**How it runs on CoWork:** Phases 0, 1, and salary research in Phase 3 may run as **parallel Tier-1 subagents**. Phase 2 returns a verdict before Phase 4. Phases 5–6 run **sequentially**. Tier 2 and Tier 3 automations run only on the **main coordination thread** (never on subagents). Checklist format: static file artifact per [references/skill-instructions/checklist-templates.md](references/skill-instructions/checklist-templates.md).
+**How it runs on CoWork:** Phases 0, 1, and salary research in Phase 3 may run as **parallel Tier-1 subagents**. Phase 2 returns a verdict before Phase 4. Phases 5–6 run **sequentially**. Tier 2 and Tier 3 automations run only on the **main coordination thread** (never on subagents). Optional **Mode 2** (`cowork_autonomous`) uses A14–A16 with re-anchor — see [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md). Checklist format: static file artifact per [references/skill-instructions/checklist-templates.md](references/skill-instructions/checklist-templates.md).
 
 **Best for:** Parallel discovery, workspace artifacts, downloadable packages when the host supports file presentation.
 
@@ -426,7 +437,7 @@ Install via **Skills** on both hosts when available. Two patterns — see [docs/
 
 **Primary — Agent Skills (current product)**
 
-1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.2) *or* use **Import from GitHub** with  
+1. [Download the ZIP from Releases](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.0) *or* use **Import from GitHub** with  
    `https://github.com/ahmedbenaw/job-application-engine`
 2. In Manus: **Skills** tab → **+ Add** → **Upload a skill** (`.zip` / `.skill`) **or** **Import from GitHub** (public repo URL above).
 
@@ -501,12 +512,12 @@ review cycle are flagged and re-confirmed before Phase 0 begins.
 
 ---
 
-## Automation Layer (v2.0)
+## Automation Layer (v2.1.0)
 
-Version 2.0 adds a native execution layer beneath the 8-phase workflow. All phases,
+Version 2.x adds a native execution layer beneath the 8-phase workflow. **v2.1.0** adds A14–A16 for CoWork execution-mode orchestration. All phases,
 gates, and invariants from v1.0 are unchanged. The automation layer is purely additive.
 
-### 13 Registered Automations
+### 16 Registered Automations
 
 | ID | Automation | Phase | Tier | Approval Phrase |
 |---|---|---|---|---|
@@ -523,6 +534,9 @@ gates, and invariants from v1.0 are unchanged. The automation layer is purely ad
 | A11 | Confirmation email to self | 7 | 2 | `APPROVE SEND` |
 | A12 | Job board MCP authenticated search | 0 (when MCP active) | 1 — auto | — |
 | A13 | Job board MCP discovery search | A0 Step 1C | 1 — auto | — |
+| A14 | CoWork autonomous host chunk | All (Mode 2 only) | 2 | `APPROVE COCHUNK` |
+| A15 | Governance re-anchor checkpoint | All (after A14) | 1 — auto | — |
+| A16 | Drift / scope verification | All (after A15) | 1 — auto | — |
 
 ### Consent Tiers
 
@@ -629,4 +643,4 @@ MIT. See `LICENSE` for full terms.
 
 ## Changelog
 
-See `CHANGELOG.md` for the full version history. Current version: **2.0.2**.
+See `CHANGELOG.md` for the full version history. Current version: **2.1.0**.

@@ -1,6 +1,6 @@
 ---
 name: job-application-engine
-version: 2.0.2
+version: 2.1.0
 edition: generic-universal
 author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect
 description: |
@@ -22,6 +22,12 @@ compatibility:
   platforms: [Claude.ai, Claude CoWork, Manus]
   external_dependencies: none
 changelog:
+  - version: 2.1.0
+    date: 2026-04-25
+    notes: |
+      Execution modes: agent_supported (default) and cowork_autonomous (CoWork opt-in) with mandatory
+      re-anchor to phase governance; docs/EXECUTION_MODES.md; MANDATORY_EXCLUSIONS reframed;
+      automations A14–A16; rules.json execution_modes; platform-capabilities updated.
   - version: 2.0.2
     date: 2026-04-25
     notes: |
@@ -62,6 +68,29 @@ in this file and the reference files in the references/ directory.
 All 8 phases are mandatory and sequential. Every phase ends with a user
 scoring gate. A score of 5 out of 5 is required to proceed. A score below 5
 triggers a revision loop within the same phase before advancing.
+
+**Execution modes (v2.1.0):** On **Claude CoWork**, the skill supports `agent_supported` (default) and optional `cowork_autonomous` — see `docs/EXECUTION_MODES.md` and `rules.json` `execution_modes`. Mode 2 never bypasses phases or consent tiers; it re-anchors after each host execution chunk. On **Claude.ai** and **Manus**, only `agent_supported` applies.
+
+---
+
+## Execution mode gate (run once per session — before A0)
+
+Set and record the session execution mode **before** A0 Capability Detection. Write the mode on the status board (e.g. `Execution mode: agent_supported`).
+
+**Claude.ai and Manus**
+
+- Use **`agent_supported`** only. Do not offer Mode 2.
+
+**Claude CoWork**
+
+1. Present:
+   - **Mode 1 — `agent_supported` (default):** guided phase flow, scoring gates, Tier 2/3 consent — current behavior.
+   - **Mode 2 — `cowork_autonomous` (optional):** allows larger multi-step host execution **chunks** only while **re-anchoring** to the same eight-phase law after each chunk (A15/A16). Irreversible actions use the same Tier 2/3 rules unless a future version says otherwise.
+2. If the user sends an **opt-in phrase** exactly as in `rules.json` → `execution_modes.cowork_autonomous.opt_in_phrases_exact`, set mode to **`cowork_autonomous`**.
+3. If the user sends **`JAE MODE: AGENT_SUPPORTED`**, set mode to **`agent_supported`**.
+4. If the user does not opt in, keep **`agent_supported`**.
+
+**Mode 2 operational rule (non-negotiable):** After every autonomous **chunk** (A14 when used), run **A15 — governance re-anchor** and **A16 — drift/scope verification** before starting the next chunk or advancing phases. If anything conflicts with the current phase objective, invariants, or registry scope, **stop** and return to a normal agent-supported checkpoint (present status, reconcile with the user).
 
 ---
 
@@ -958,10 +987,7 @@ Present Phase 7 scoring gate.
 
 ## Platform Execution Notes
 
-Canonical reference: `docs/platform-capabilities.md`. Mandatory exclusions
-(not triggered by this skill): `docs/MANDATORY_EXCLUSIONS.md`. JAE does **not**
-invoke scheduling, generic OS computer-use, or undeclared host features — see
-those files.
+Canonical reference: `docs/platform-capabilities.md`. **Execution modes:** `docs/EXECUTION_MODES.md`. **Scope law (what JAE may claim vs host features):** `docs/MANDATORY_EXCLUSIONS.md`. JAE does **not** fabricate undeclared automations or bypass invariants; host capabilities (e.g. CoWork, connectors) are used only under product limits, user consent, and — in Mode 2 — mandatory re-anchor to this skill’s phase governance.
 
 Claude.ai (web chat): Run all phases **sequentially** in one conversation.
 Wait for the scoring gate before advancing. Confirm explicitly before Phase 4.
@@ -995,7 +1021,7 @@ immediately for any local download step.
 
 ---
 
-## Automation Layer — v2.0 Addition
+## Automation Layer — v2.0 Addition (v2.1.0: A14–A16 for execution modes)
 
 This section is purely additive to the baseline eight-phase workflow shipped in
 the Generic Universal edition. All 8 phases and their gates remain unchanged.
@@ -1003,7 +1029,8 @@ The automation layer adds a capability detection
 protocol at session start, inline automation recommendations at relevant
 phase steps, consent gates before any real-world action fires, and execution
 routing per platform. Read automation-registry.json for the full declared
-scope of permitted automations.
+scope of permitted automations (including **A14–A16** for `cowork_autonomous`
+chunk orchestration, governance re-anchor, and drift check — `docs/EXECUTION_MODES.md`).
 
 ---
 

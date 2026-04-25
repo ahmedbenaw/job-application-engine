@@ -5,6 +5,32 @@ Format: Most recent changes listed first within each version.
 
 ---
 
+## [2.1.0] — 2026-04-25 | Dual execution modes + A14–A16 + policy alignment
+
+**Added — Execution modes (CoWork)**
+
+- [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md) — `agent_supported` (default) vs `cowork_autonomous` (opt-in); **re-anchor** after each host chunk (A15/A16); exact opt-in/opt-out strings; relationship to `remediation` and `artifact_policy`.
+- [rules.json](rules.json) top-level `execution_modes` policy: `default_mode`, `cowork_autonomous` governance anchor, drift handling, doc pointers; Tier 2 `valid_responses` includes `APPROVE COCHUNK`.
+
+**Updated — Scope and platform docs**
+
+- [docs/MANDATORY_EXCLUSIONS.md](docs/MANDATORY_EXCLUSIONS.md) — three buckets: **hard prohibited** · **host-capability-gated** · **registry-native**.
+- [docs/platform-capabilities.md](docs/platform-capabilities.md) — Execution modes section; host/plan-dependent links to product pages; cross-links to `EXECUTION_MODES` and reframed exclusions.
+
+**Updated — SKILL.md**
+
+- Execution **mode gate** before A0; Mode 2 per-chunk loop (A14 → A15 → A16); `version` **2.1.0**.
+
+**Updated — automation-registry.json**
+
+- `registry_version` **2.1.0**; new automations **A14** (CoWork autonomous chunk, Tier 2, `APPROVE COCHUNK`), **A15** (governance re-anchor), **A16** (drift/scope verification); `artifact_policy.canonical_docs` includes `docs/EXECUTION_MODES.md`.
+
+**Updated — README.md**
+
+- Workflow diagram: **EM** (execution mode) subgraph before A0; narrative and install links **v2.1.0**; **16** automations **A01–A16**; automation table and Platform Setup aligned.
+
+---
+
 ## [2.0.2] — 2026-04-25 | README workflow diagram + install metadata
 
 **Updated — README.md**

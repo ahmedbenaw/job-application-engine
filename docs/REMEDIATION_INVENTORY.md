@@ -9,6 +9,7 @@ This list documents the **mandatory** doc and code touch surfaces for the platfo
 | `docs/MANDATORY_EXCLUSIONS.md` | Explicit non-features + reasons |
 | `docs/platform-capabilities.md` | Canonical Claude / CoWork / Manus / hybrid |
 | `docs/REMEDIATION_INVENTORY.md` | This file |
+| `docs/EXECUTION_MODES.md` | Dual execution modes; re-anchor; opt-in strings (v2.1.0) |
 
 ## Modified files (mandatory)
 

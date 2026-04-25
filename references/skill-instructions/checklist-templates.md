@@ -3,7 +3,8 @@
 # Read when adapting the checklist format for a new platform or use case.
 
 **Canonical platform behavior:** [docs/platform-capabilities.md](../../docs/platform-capabilities.md)  
-**Mandatory exclusions (what the skill does not trigger):** [docs/MANDATORY_EXCLUSIONS.md](../../docs/MANDATORY_EXCLUSIONS.md)
+**Execution modes (CoWork):** [docs/EXECUTION_MODES.md](../../docs/EXECUTION_MODES.md)  
+**Mandatory exclusions (scope law):** [docs/MANDATORY_EXCLUSIONS.md](../../docs/MANDATORY_EXCLUSIONS.md)
 
 ---
 ## Purpose
