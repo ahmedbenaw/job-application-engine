@@ -150,13 +150,76 @@ specific trigger points within each phase.
 
 ---
 
-## Planned for v1.1.0
+## Session Entry Gate — Additive patch to v2.0.0
+
+### Problem resolved
+The skill previously had a single linear entry path (Mode A — discovery)
+with no mechanism to detect or handle the most common real-world session
+start: a user uploading their CV and providing a specific job URL. Phase 0
+(discovery) would run even when the user already had a role in mind. The
+cold-start branch asked "what role type and geography?" even when a job
+URL was already in the session.
+
+### Added — Session Entry Gate (SKILL.md)
+A routing gate that runs after A0 Capability Detection and before any phase.
+Detects the session mode automatically from session signals. Routes Mode A
+sessions to Phase 0. Routes Mode B sessions directly to Phase 1 with Phase 0
+marked as Skipped.
+
+Mode A — Job Discovery: triggered when no file is uploaded and no job URL
+is provided. User states a target role, sector, geography, or seniority.
+Proceeds to Phase 0 as before.
+
+Mode B — Direct Application: triggered when the user uploads a CV and
+provides a job URL or JD text, or when any of: "apply for this", "I found
+a job", "I want to apply to [role/company]", a job URL, or JD text appears
+in the opening message. Phase 0 is skipped entirely. The CV is fed into
+the First-Use Setup Protocol Step 0 extraction and the job URL is fed into
+Phase 1 Company Intelligence simultaneously. All subsequent phases run
+identically in both modes.
+
+Ambiguous signal handling: if the mode cannot be determined from session
+signals, the skill presents both options explicitly and waits for the user
+to choose before proceeding.
+
+### Added — Mode B intake prompt (SKILL.md)
+Structured prompt requesting CV upload and job URL if either is absent when
+Mode B is detected but one of the two required inputs is missing.
+
+### Added — Mode B checklist display (SKILL.md)
+Phase 0 shows ✅ Skipped with "Mode B" label in Mode B sessions.
+
+### Updated — Phase 0 (SKILL.md)
+Section now opens with "MODE A ONLY" constraint. Cold-start branch updated
+to include explicit instruction not to fire in Mode B sessions.
+
+### Updated — SKILL.md description block
+Now describes both session modes. Trigger language updated to include CV
+upload, job URL paste, and "I want to apply to [company]" as explicit
+triggers alongside the existing discovery-mode triggers.
+
+### Updated — SKILL.md body title
+Removed stale "v1.0" version label from the document body title.
+
+### Updated — rules.json
+session_entry_gate block added with mode_a and mode_b signal arrays,
+entry_phase routing, parallel_intake spec for Mode B, and ambiguous_signal
+handling. Phase 0 trigger updated to session_entry_gate_routes_mode_a and
+mode field set to mode_a_only. cold_start note updated to include Mode A only constraint.
+
+### Updated — README.md Quick Start
+Now shows both entry modes with concrete example phrases and file upload
+instruction for Mode B.
+
+---
+
+## Planned
 
 - Application tracking dashboard (multi-role session management).
-- Interview preparation module (Phase 8) triggered from Branch A of Phase 7.
-- Offer evaluation module — structured comparison of competing offers across
-  compensation dimensions.
-- Additional market salary anchors: USA (by state), Canada, Singapore,
-  Australia.
-- Integration guide for uploading the skill to Claude Projects directly from
-  the repository.
+- Interview preparation module triggered from Phase 7 Branch A.
+- Offer evaluation module — structured comparison of competing offers.
+- Additional salary market anchors: USA (by state), Canada, Singapore, Australia.
+- Mode B enhancement: structured resume parser returning a scored diff
+  against the JD before Phase 2 runs, surfacing gaps earlier.
+- Multi-role Mode B: user uploads one CV and provides multiple job URLs
+  in one session, skill queues them and runs each through Phases 1–7 sequentially.

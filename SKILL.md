@@ -5,16 +5,18 @@ edition: generic-universal
 author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect
 description: |
   Universal end-to-end job application system. Works for any candidate, any
-  role, any industry. Triggers on any request involving job search, job
-  applications, cover letters, or application form completion. Executes an
-  8-phase workflow: job discovery, company intelligence, fit analysis,
-  clarifying intake, application package production, writing quality pass,
-  governance gate, and post-submission loop. Automatically maps the target
-  role to a 7-level seniority framework and adjusts strategy accordingly.
-  All agent logic is embedded inline — this skill operates with no external
-  dependencies. Use whenever a user says "find me jobs", "apply for this
-  role", "write my cover letter", "fill this application", provides a job
-  posting URL, or asks to search for roles similar to one already applied for.
+  role, any industry. Supports two session entry modes. Mode A — Job
+  Discovery: the user wants to find matching roles; the skill searches 10
+  platforms, ranks results, and guides the full application workflow.
+  Mode B — Direct Application: the user already has a specific role; they
+  upload their CV and provide the job URL, and the skill runs the full
+  workflow from Phase 1 onward, skipping discovery entirely. A Session Entry
+  Gate detects the mode automatically from uploaded files and URLs, or
+  presents both options explicitly if the mode is ambiguous. All agent logic
+  is embedded inline — no external dependencies. Triggers when a user uploads
+  a CV, pastes a job URL, says "find me jobs", "apply for this role", "I
+  want to apply to [company]", "fill this application", or provides any job
+  posting URL or job description text.
 compatibility:
   tools: [web_search, web_fetch, bash_tool, create_file, present_files]
   platforms: [Claude.ai, Claude CoWork, Manus]
@@ -36,11 +38,11 @@ changelog:
       README for platform onboarding. MIT licence.
 ---
 
-# Job Application Engine v1.0 — Generic Universal Edition
+# Job Application Engine — Generic Universal Edition
 
-A complete, standalone job application system. No external agents, skills,
-or frameworks are required. All logic is embedded in this file and the
-reference files in the references/ directory.
+A complete, standalone job application system with two session entry modes.
+No external agents, skills, or frameworks required. All logic is embedded
+in this file and the reference files in the references/ directory.
 
 All 8 phases are mandatory and sequential. Every phase ends with a user
 scoring gate. A score of 5 out of 5 is required to proceed. A score below 5
@@ -446,14 +448,151 @@ Level-to-strategy mapping:
 
 ---
 
+## Session Entry Gate
+
+This gate runs after A0 Capability Detection and before any phase begins.
+It determines which of the two session modes the user is in and routes
+the session accordingly. Never skip this gate. Never assume the mode.
+
+---
+
+### Detecting the Session Mode
+
+Before presenting any phase, scan the session for the following signals:
+
+**Signals for Mode B — Direct Application (skip Phase 0):**
+- A file is uploaded to the session (CV, resume, portfolio)
+- A URL is pasted that resolves to a job posting, job description, or
+  application form (e.g. linkedin.com/jobs, boards.greenhouse.io, lever.co,
+  breezy.hr, company careers page, or any URL with job-related path)
+- The user's opening message contains any of: "apply for this", "I found a
+  job", "here is the job", "I want to apply to", "this role", "help me apply",
+  "fill in this application", a job title + company name together, or pastes
+  a JD or application form text directly
+
+**Signals for Mode A — Discovery (proceed to Phase 0):**
+- No file uploaded and no job URL provided
+- User asks to "find me jobs", "search for roles", "what jobs match my CV",
+  or describes a general target (role type, sector, city) without a specific
+  company or URL
+- User says "continue" or "next" from a previous Phase 7 Branch A session
+
+**If signals are ambiguous** (e.g. a CV is uploaded but no job URL):
+Present the mode selection to the user explicitly (see below).
+
+---
+
+### Mode Selection Prompt
+
+If the session mode cannot be determined from signals alone, present this:
+
+```
+── SESSION START ────────────────────────────────────────────────────
+How would you like to begin?
+
+  MODE A — Job Discovery
+  I will search 10 platforms for roles matching your profile,
+  rank the results, and then guide you through the full
+  application workflow for whichever role you select.
+  → Say "Discover" or describe a target role/city/sector.
+
+  MODE B — Apply to a Specific Role
+  You already have a job in mind. Provide your CV (upload the
+  file) and the job description URL or application link, and I
+  will run the full application workflow for that specific role —
+  skipping the discovery phase entirely.
+  → Upload your CV and paste the job URL, or say "Apply" and
+    I will ask you for both.
+
+Which would you like to do?
+────────────────────────────────────────────────────────────────────
+```
+
+---
+
+### Mode A — Job Discovery Entry
+
+Proceed to Phase 0 as defined below. The cold-start branch in Phase 0
+handles the case where no prior anchor role exists.
+
+---
+
+### Mode B — Direct Application Entry
+
+**Step 1 — Collect required inputs:**
+The user must provide two things before Phase 1 can begin:
+  (a) CV or resume — uploaded as PDF or DOCX, or pasted as text
+  (b) Job URL — the posting URL, application form URL, or a paste of the JD
+
+If either is missing, prompt for it specifically:
+
+```
+── MODE B INTAKE ────────────────────────────────────────────────────
+To apply to a specific role I need:
+
+  1. Your CV or resume — upload the file (PDF or DOCX) or paste
+     the text directly into this conversation.
+
+  2. The job URL — paste the link to the job posting or application
+     form. If the company sent you the JD by email, paste the text
+     of the JD here instead.
+
+Provide both and I will begin immediately.
+────────────────────────────────────────────────────────────────────
+```
+
+**Step 2 — Process inputs in parallel:**
+Run these two operations simultaneously:
+  (a) Feed the CV into the First-Use Setup Protocol Step 0 extraction.
+      If a profile already exists, run the staleness check and note any
+      fields the CV updates.
+  (b) Feed the job URL into Phase 1 (Company Intelligence) directly.
+      web_fetch the URL. If the URL is an application form, also extract
+      the form fields as per the platform-aware form-fetch strategy.
+
+**Step 3 — Skip Phase 0 entirely.**
+Phase 0 (Job Discovery) is not relevant in Mode B. Update the session
+checklist to mark Phase 0 as ✅ Skipped and proceed directly to Phase 1.
+
+Do not ask the user "what role type, sector, geography are you targeting?"
+in Mode B. That question belongs to Mode A cold-start only.
+
+**Step 4 — Proceed from Phase 1 onward.**
+The session now follows the standard workflow from Phase 1 through Phase 7.
+All phases, scoring gates, automation recommendations, and consent gates
+operate identically in both modes from Phase 1 onward.
+
+---
+
+### Dynamic Checklist — Mode B Display
+
+In Mode B sessions, update the checklist header to reflect the skipped phase:
+
+```
+╔════════════════════════════════════════════════════════════════════╗
+║          JOB APPLICATION ENGINE — SESSION STATUS BOARD            ║
+╠════════════════════════════════════════════════════════════════════╣
+║  Phase 0 │ Job Discovery          │ ✅ Skipped  │ Mode B          ║
+║  Phase 1 │ Company Intelligence   │ [STATUS]    │ Score: [ /5]   ║
+...
+```
+
+---
+
 ## Phase 0 — Job Discovery
+
+MODE A ONLY. This phase does not run in Mode B sessions. If the session
+is Mode B, Phase 0 is marked ✅ Skipped in the checklist and the workflow
+proceeds directly from Phase 1.
 
 Print checklist with Phase 0 set to 🔄 Active before running any searches.
 
-COLD-START BRANCH: If no prior application exists as an anchor, prompt the
-user: "What role type, seniority level, sector, and preferred geography are
-you targeting?" Collect all four inputs. Use the Level Classification above
-to confirm the seniority target before building queries.
+COLD-START BRANCH (Mode A, no prior anchor): If no prior application exists
+as a similarity anchor and the user has not stated a target role, prompt:
+"What role type, seniority level, sector, and preferred geography are you
+targeting?" Collect all four inputs. Use the Level Classification above to
+confirm the seniority target before building queries. Do NOT run this branch
+in Mode B — Mode B users have already defined their target via the job URL.
 
 Read references/applicant-profile-template.md to extract:
   [TARGET_ROLE_TYPES], [TARGET_SENIORITY_LEVEL], [TARGET_SECTORS],

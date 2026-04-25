@@ -98,12 +98,51 @@
         }
       ]
     },
+    "session_entry_gate": {
+      "runs_after": "A0_capability_detection",
+      "runs_before": "phase_0_or_phase_1",
+      "purpose": "detect_session_mode_and_route_accordingly",
+      "mode_a": {
+        "name": "Job Discovery",
+        "trigger_signals": [
+          "no_file_uploaded_and_no_job_url_provided",
+          "user_says_find_me_jobs_or_search_for_roles",
+          "user_describes_general_target_role_sector_city",
+          "post_submission_branch_a_continuation"
+        ],
+        "entry_phase": 0,
+        "cold_start_prompt": "ask_role_type_seniority_sector_geography_if_no_anchor"
+      },
+      "mode_b": {
+        "name": "Direct Application",
+        "trigger_signals": [
+          "file_uploaded_cv_resume_pdf_docx",
+          "job_url_pasted_or_detected_in_message",
+          "user_says_apply_for_this_or_I_want_to_apply_to",
+          "jd_text_pasted_directly",
+          "company_name_plus_role_title_in_opening_message"
+        ],
+        "entry_phase": 1,
+        "skip_phase_0": true,
+        "phase_0_checklist_status": "Skipped_Mode_B",
+        "parallel_intake": {
+          "a": "feed_cv_to_first_use_step_0_extraction",
+          "b": "feed_job_url_to_phase_1_company_intelligence"
+        }
+      },
+      "ambiguous_signal": "present_mode_selection_prompt_to_user",
+      "mode_b_intake": {
+        "required": ["cv_or_resume_uploaded_or_pasted", "job_url_or_jd_text"],
+        "prompt_if_missing": "ask_specifically_for_whichever_is_absent"
+      }
+    },
     "phases": [
       {
         "id": 0,
         "name": "Job Discovery",
-        "trigger": "user_requests_job_search_or_post_submission",
-        "cold_start": "prompt_for_role_type_seniority_sector_geography_if_no_anchor",
+        "mode": "mode_a_only",
+        "trigger": "session_entry_gate_routes_mode_a",
+        "cold_start": "prompt_for_role_type_seniority_sector_geography_if_no_anchor_mode_a_only",
         "read_profile_fields": ["TARGET_ROLE_TYPES", "TARGET_SENIORITY_LEVEL", "TARGET_SECTORS", "PREFERRED_CITIES", "HARD_EXCLUSION_GEOGRAPHIES"],
         "platforms": ["LinkedIn", "Indeed", "Wellfound", "Relocate.me", "EuroTechJobs", "Greenhouse", "Lever", "BreezyHR", "WelcomeToTheJungle", "RemoteOK"],
         "search_passes": 2,

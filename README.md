@@ -17,9 +17,17 @@ explicit consent at every step.
 ## Quick Start
 
 1. [Download JAE-v2.0-Generic-Universal.zip from the v2.0.0 Release](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.0.0)
-2. Fill in your details in `references/applicant-profile-template.md`
-3. In Claude: go to **Customize → Skills → Create Skill → Upload ZIP** — the skill is then available across all your conversations
-4. Say: *"Find me jobs similar to [ROLE] in [CITY]"* — the engine guides you from there
+2. In Claude: go to **Customize → Skills → Create Skill → Upload ZIP**
+3. Choose your entry mode:
+
+**Mode A — Discover roles matching your profile:**
+> *"Find me Senior Product Manager roles in Berlin with relocation support"*
+> The skill searches 10 platforms, ranks results, and guides the full workflow.
+
+**Mode B — Apply to a specific role you already have:**
+> Upload your CV (PDF or DOCX) + paste the job URL in the same message.
+> The skill skips discovery entirely and runs the full application workflow
+> for that specific role — from company intelligence through to submission.
 
 ---
 
