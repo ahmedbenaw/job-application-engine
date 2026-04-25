@@ -204,6 +204,41 @@
         "Subject: Application Record — [ROLE_TITLE] at [COMPANY_NAME]",
         "Attached: application package summary"
       ]
+    },
+    {
+      "id": "A12",
+      "name": "Job Board MCP — Authenticated Job Search",
+      "phase": "Phase 0 — Job Discovery (when job board MCP is ACTIVE)",
+      "description": "Use an active job board or ATS platform MCP to perform authenticated searches, access saved jobs, retrieve application status, or trigger Easy Apply flows. Supplements web_search and web_fetch with authenticated access to platform features not available to anonymous requests.",
+      "tool_required": null,
+      "mcp_required": ["LinkedIn MCP", "Indeed MCP", "Greenhouse MCP", "Lever MCP", "Workday MCP", "Ashby MCP", "Wellfound MCP", "SmartRecruiters MCP", "Breezy HR MCP — whichever is ACTIVE in session"],
+      "consent_tier": 1,
+      "approval_phrase": null,
+      "reversible": true,
+      "fallback": "web_search and web_fetch for discovery — fully functional without MCP",
+      "activation_condition": "only_fires_when_at_least_one_job_board_mcp_is_active",
+      "scope_boundary": "Read-only job discovery and search only. No application submission via this automation — submission is A05. No bulk scraping. No storing of credentials beyond current session.",
+      "note": "When multiple job board MCPs are active, the skill uses the most appropriate one for the target platform and informs the user which is being used."
+    },
+    {
+      "id": "A13",
+      "name": "Job Board MCP Discovery Search",
+      "phase": "A0 — Capability Detection (STEP 1C — runs when all job board MCPs are INACTIVE)",
+      "description": "When no job board or ATS platform MCP is detected in the session, run web searches to find currently available MCPs for job platforms. Present results as RECOMMENDED CONNECTIONS in the Capability Map. This automation helps the user discover and connect MCPs that would enhance future sessions.",
+      "tool_required": ["web_search"],
+      "mcp_required": null,
+      "consent_tier": 1,
+      "approval_phrase": null,
+      "reversible": true,
+      "fallback": "Skip — if web_search is also unavailable, note that MCP recommendations cannot be retrieved and proceed",
+      "activation_condition": "fires_automatically_in_A0_step_1C_when_all_job_board_mcps_inactive",
+      "search_queries": [
+        "LinkedIn MCP model context protocol job search site:github.com",
+        "job board ATS MCP Claude integration available site:github.com OR site:npmjs.com",
+        "Greenhouse Lever Workday MCP server integration Claude"
+      ],
+      "output": "list_of_available_mcps_with_links_and_capability_description",
+      "scope_boundary": "Search and recommendation only. Does not install, connect, or configure any MCP. User must connect MCPs themselves via their platform settings."
     }
   ],
   "out_of_scope_examples": [
@@ -214,6 +249,8 @@
     "Any action on platforms not listed in this registry",
     "Bulk application submission across multiple companies",
     "Automated follow-up emails without explicit per-email consent",
-    "Any action that executes based on a score of 5 — scoring and approval are separate"
+    "Any action that executes based on a score of 5 — scoring and approval are separate",
+    "Installing or auto-connecting MCPs without user action",
+    "Using a job board MCP for submission — submission always uses A05 (BrowserBase/Playwright)"
   ]
 }

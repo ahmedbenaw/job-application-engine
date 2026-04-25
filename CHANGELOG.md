@@ -150,7 +150,71 @@ specific trigger points within each phase.
 
 ---
 
-## Session Entry Gate — Additive patch to v2.0.0
+## Job Board MCP Detection + Diagram Update — Additive patch to v2.0.0
+
+### Added — Job Board and ATS Platform MCP Detection (SKILL.md, A0)
+
+STEP 1B added to A0 Capability Detection Protocol. Probes specifically for
+job board and ATS platform MCPs beyond the generic tool and MCP probe:
+LinkedIn MCP, Indeed MCP, Greenhouse MCP, Lever MCP, Workday MCP, Ashby MCP,
+Wellfound MCP, SmartRecruiters MCP, Breezy HR MCP, Recruitee MCP.
+
+Each is checked and reported as ACTIVE, LIMITED, or INACTIVE in the
+Capability Map.
+
+STEP 1C added — MCP Discovery Search. Fires automatically when ALL job board
+and ATS MCPs are INACTIVE. Runs three targeted web_search queries to find
+currently available job board and ATS MCPs on GitHub and npm. Presents
+results as a RECOMMENDED CONNECTIONS block below the Capability Map. Notes
+clearly that web_search and web_fetch provide full discovery capability
+without these MCPs — they unlock authenticated features (saved jobs, easy
+apply, application status tracking) as an enhancement, not a requirement.
+
+Capability Map expanded with a dedicated JOB BOARD & ATS PLATFORM MCPs
+section showing status for each known platform MCP.
+
+STEP 4 updated: session start prompt changed from "Shall we begin Phase 0?"
+to "Shall we begin?" to correctly handle both Mode A and Mode B entry points.
+
+### Added — Automations A12 and A13 (automation-registry.json)
+
+A12 — Job Board MCP Authenticated Search: Tier 1 (auto-execute). Uses an
+active job board or ATS MCP to perform authenticated searches, access saved
+jobs, retrieve application status, or trigger Easy Apply flows. Fires only
+when at least one job board MCP is ACTIVE. Fallback: web_search and
+web_fetch for all discovery actions.
+
+A13 — Job Board MCP Discovery Search: Tier 1 (auto-execute). Runs
+automatically in A0 STEP 1C when all job board MCPs are INACTIVE. Searches
+for available MCPs and presents recommendations. Does not install or connect
+any MCP — user action required.
+
+Out-of-scope additions: installing or auto-connecting MCPs without user
+action; using job board MCPs for submission (submission always uses A05).
+
+### Updated — Workflow Diagram (README.md)
+
+Removed `%%{init: {'theme': 'dark', ...}}%%` directive entirely. Diagram
+now renders in GitHub's default light mode without forced theming.
+
+Changed outer flowchart direction from LR (left-to-right) to TB
+(top-to-bottom). All phase subgraphs remain direction LR internally.
+Result: phases stack vertically, each displaying as a horizontal row.
+
+All classDef color fills replaced with light-mode equivalents:
+dark fills (e.g. #134e4a, #14532d, #7f1d1d) replaced with light fills
+(#e0f2fe, #dcfce7, #fee2e2) with matching dark text and colored borders.
+
+Added Session Entry Gate subgraph to the diagram between A0 and Phase 0,
+showing Mode A and Mode B routing.
+
+Added Job Board MCP Probe and Recommend MCPs nodes to A0 subgraph.
+
+Added Job Board MCP node to Phase 0 subgraph.
+
+Mode B direct path from Session Entry Gate to Phase 1 shown explicitly.
+
+---
 
 ### Problem resolved
 The skill previously had a single linear entry path (Mode A — discovery)

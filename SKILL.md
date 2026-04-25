@@ -991,6 +991,47 @@ Check which of the following are active in the current session environment:
   Google Calendar MCP (reminder creation)
   Any other MCP detected in the session environment
 
+STEP 1B — Job Board and ATS Platform MCP Detection:
+This step runs as part of STEP 1. Probe specifically for the following
+job board and ATS platform MCPs, which enable direct authenticated access
+to platform dashboards, saved job lists, and application status tracking
+beyond what web_fetch alone can achieve:
+
+  LinkedIn MCP        — authenticated job search, saved jobs, easy apply
+  Indeed MCP          — job search, application tracking
+  Greenhouse MCP      — ATS access for candidates and recruiters
+  Lever MCP           — ATS job board access
+  Workday MCP         — enterprise ATS access
+  Ashby MCP           — modern ATS integration
+  Wellfound MCP       — startup job board access
+  SmartRecruiters MCP — enterprise ATS integration
+  Breezy HR MCP       — job board and ATS access
+  Recruitee MCP       — ATS integration
+
+For each: check if the MCP is active in the current session. Mark as
+ACTIVE, LIMITED, or INACTIVE in the map.
+
+If ALL job board and ATS MCPs are INACTIVE — run STEP 1C immediately.
+
+STEP 1C — MCP Discovery Search (runs only when no job board MCP is found):
+Run the following web searches to find currently available job board and
+ATS platform MCPs that the user could connect:
+
+  web_search: "LinkedIn MCP model context protocol job search site:github.com"
+  web_search: "job board ATS MCP Claude integration available 2025 site:github.com OR site:npmjs.com"
+  web_search: "Greenhouse Lever Workday MCP server integration Claude"
+
+From the results, compile a list of:
+  - MCPs that exist and are publicly available (GitHub repo, npm package, or official)
+  - MCPs that are in development or planned
+  - Native API integrations that approximate MCP capability
+
+Present this as a RECOMMENDED CONNECTIONS block below the Capability Map.
+Always note that without a job board MCP, the skill falls back to
+web_search and web_fetch for discovery and manual paste for authenticated
+actions. That fallback is fully functional — job board MCPs are an
+enhancement, not a requirement.
+
 STEP 2 — Build and present the Capability Map:
 Print the map using this exact format. Replace [STATUS] with one of:
   ✅ ACTIVE — tool confirmed available and callable
@@ -998,24 +1039,41 @@ Print the map using this exact format. Replace [STATUS] with one of:
   ❌ INACTIVE — tool not connected (show what connection would enable it)
 
 ```
-╔══════════════════════════════════════════════════════════════════════════╗
-║                 JAE — AUTOMATION CAPABILITY MAP                         ║
-╠═══════════════════════════════╦══════════════════╦══════════╦═══════════╣
-║  AUTOMATION                   ║ TOOL / MCP       ║ STATUS   ║ FALLBACK  ║
-╠═══════════════════════════════╬══════════════════╬══════════╬═══════════╣
-║  Job board access & search    ║ web_fetch/search  ║ [STATUS] ║ —        ║
-║  Form fetch & parse           ║ web_fetch         ║ [STATUS] ║ Manual   ║
-║  Browser form filling         ║ BrowserBase MCP   ║ [STATUS] ║ Playwright║
-║  Application submission       ║ BrowserBase MCP   ║ [STATUS] ║ Manual   ║
-║  Document creation (DOCX/PDF) ║ bash_tool         ║ [STATUS] ║ —        ║
-║  File download (local)        ║ present_files     ║ [STATUS] ║ —        ║
-║  Cloud save (Drive/OneDrive)  ║ Drive / OneDrive  ║ [STATUS] ║ Ask user ║
-║  Email draft & send           ║ Gmail / Outlook   ║ [STATUS] ║ Manual   ║
-║  Calendar reminders           ║ Calendar MCP      ║ [STATUS] ║ Manual   ║
-╚═══════════════════════════════╩══════════════════╩══════════╩═══════════╝
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    JAE — AUTOMATION CAPABILITY MAP                          ║
+╠════════════════════════════════════╦══════════════════╦══════════╦══════════╣
+║  AUTOMATION                        ║ TOOL / MCP       ║ STATUS   ║ FALLBACK ║
+╠════════════════════════════════════╬══════════════════╬══════════╬══════════╣
+║  CORE TOOLS                        ║                  ║          ║          ║
+║  Job board search & fetch          ║ web_search/fetch ║ [STATUS] ║ —        ║
+║  Form fetch & parse                ║ web_fetch        ║ [STATUS] ║ Manual   ║
+║  Browser form filling              ║ BrowserBase MCP  ║ [STATUS] ║ Playwright║
+║  Application submission            ║ BrowserBase MCP  ║ [STATUS] ║ Manual   ║
+║  Document creation (DOCX/PDF)      ║ bash_tool        ║ [STATUS] ║ —        ║
+║  File download (local)             ║ present_files    ║ [STATUS] ║ —        ║
+║  Cloud save (Drive/OneDrive)       ║ Drive/OneDrive   ║ [STATUS] ║ Ask user ║
+║  Email draft & send                ║ Gmail/Outlook    ║ [STATUS] ║ Manual   ║
+║  Calendar reminders                ║ Calendar MCP     ║ [STATUS] ║ Manual   ║
+╠════════════════════════════════════╬══════════════════╬══════════╬══════════╣
+║  JOB BOARD & ATS PLATFORM MCPs     ║                  ║          ║          ║
+║  LinkedIn (search, saved, apply)   ║ LinkedIn MCP     ║ [STATUS] ║ web_fetch ║
+║  Indeed (search, tracking)         ║ Indeed MCP       ║ [STATUS] ║ web_fetch ║
+║  Greenhouse (ATS)                  ║ Greenhouse MCP   ║ [STATUS] ║ web_fetch ║
+║  Lever (ATS)                       ║ Lever MCP        ║ [STATUS] ║ web_fetch ║
+║  Workday (enterprise ATS)          ║ Workday MCP      ║ [STATUS] ║ web_fetch ║
+║  Ashby (modern ATS)                ║ Ashby MCP        ║ [STATUS] ║ web_fetch ║
+║  Wellfound / AngelList             ║ Wellfound MCP    ║ [STATUS] ║ web_fetch ║
+║  SmartRecruiters                   ║ SmartRec MCP     ║ [STATUS] ║ web_fetch ║
+╚════════════════════════════════════╩══════════════════╩══════════╩══════════╝
 
 INACTIVE AUTOMATIONS — what would enable them:
-  [List each ❌ item with the MCP name and how to connect it]
+  [List each ❌ item with the MCP name and connection instructions]
+
+RECOMMENDED JOB BOARD MCPs (shown only when all job board MCPs are INACTIVE):
+  [Results from STEP 1C web search — available MCPs with GitHub/npm links]
+  [Note: web_search and web_fetch provide full discovery capability without
+   these MCPs. They unlock authenticated features like saved jobs, easy
+   apply, and application status tracking.]
 ```
 
 STEP 3 — Browser automation disclosure:
@@ -1036,7 +1094,7 @@ If both are INACTIVE: note that form filling and submission will use
 pre-staged answers for manual paste. No further action needed.
 
 STEP 4 — Acknowledge and proceed:
-After presenting the Capability Map, ask: "Shall we begin Phase 0?"
+After presenting the Capability Map, ask: "Shall we begin?"
 Do not proceed until the user confirms.
 
 ---

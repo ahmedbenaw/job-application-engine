@@ -76,23 +76,7 @@ Approval gates authorise real-world actions. These are entirely separate systems
 ## Workflow Diagram
 
 ```mermaid
-%%{init: {
-  'theme': 'dark',
-  'themeVariables': {
-    'primaryColor': '#0d1b2a',
-    'primaryTextColor': '#e2e8f0',
-    'primaryBorderColor': '#1e40af',
-    'lineColor': '#94a3b8',
-    'secondaryColor': '#1e293b',
-    'tertiaryColor': '#0f172a',
-    'edgeLabelBackground': '#1e293b',
-    'clusterBkg': '#0d1117',
-    'clusterBorder': '#1e3a6e',
-    'titleColor': '#7dd3fc',
-    'nodeTextColor': '#ffffff'
-  }
-}}%%
-flowchart LR
+flowchart TB
 
   %% ── SESSION START ─────────────────────────────────────
   START([" 🟢 Session Start "]):::entry
@@ -104,24 +88,38 @@ flowchart LR
     A0_CONF{Capability Map\nConfirmed?}:::gate
     A0_PT["Probe Tools &\nConnections"]:::step
     A0_CM["Build\nCapability Map"]:::step
+    A0_JB["Job Board &\nATS MCP Probe"]:::step
+    A0_REC["Recommend\nMCPs if none found"]:::autonode
     A0_PW --> A0_CONF
     A0_CONF -- No --> A0_PW
-    A0_CONF -- Yes --> A0_PT --> A0_CM
+    A0_CONF -- Yes --> A0_PT --> A0_CM --> A0_JB --> A0_REC
   end
   START --> CAP
 
-  %% ── PHASE 0 — JOB DISCOVERY ──────────────────────────
-  subgraph PH0["  P0 · Job Discovery"]
+  %% ── SESSION ENTRY GATE ────────────────────────────────
+  subgraph SEG["  Session Entry Gate"]
+    direction LR
+    SEG_D{Mode\nDetected?}:::gate
+    SEG_A["Mode A\nJob Discovery"]:::step
+    SEG_B["Mode B\nDirect Apply"]:::step
+    SEG_D -- "Mode A" --> SEG_A
+    SEG_D -- "Mode B\nCV + Job URL" --> SEG_B
+  end
+  CAP --> SEG
+
+  %% ── PHASE 0 — JOB DISCOVERY (Mode A only) ────────────
+  subgraph PH0["  P0 · Job Discovery  ·  Mode A only"]
     direction LR
     P0_PS["Platform Search\n& Filter"]:::step
     P0_JB["Job Board\nFetch"]:::step
+    P0_MCP["Job Board MCP\nif active"]:::autonode
     P0_G{Top 5\nScored?}:::gate
     P0_FJ["Full JD\nFetch"]:::step
-    P0_PS --> P0_JB --> P0_G
+    P0_PS --> P0_JB --> P0_MCP --> P0_G
     P0_G -- No --> P0_PS
     P0_G -- Yes --> P0_FJ
   end
-  A0_CM --> PH0
+  SEG_A --> PH0
 
   %% ── PHASE 1 — COMPANY INTELLIGENCE ──────────────────
   subgraph PH1["  P1 · Company Intelligence"]
@@ -133,6 +131,7 @@ flowchart LR
     P1_G -- No --> P1_PR
   end
   P0_FJ --> PH1
+  SEG_B --> PH1
 
   %% ── PHASE 2 — FIT ANALYSIS ───────────────────────────
   subgraph PH2["  P2 · Fit Analysis"]
@@ -240,29 +239,29 @@ flowchart LR
     LLS([Session\nStart/End]):::entry
   end
 
-  %% ── STYLES ───────────────────────────────────────────
-  classDef entry    fill:#0f766e,stroke:#14b8a6,stroke-width:2px,color:#ccfbf1,font-weight:bold
-  classDef endnode  fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px,color:#bfdbfe,font-weight:bold
-  classDef step     fill:#134e4a,stroke:#0d9488,stroke-width:1.5px,color:#ccfbf1
-  classDef autonode fill:#7c2d12,stroke:#f97316,stroke-width:1.5px,color:#fed7aa
-  classDef gate     fill:#14532d,stroke:#22c55e,stroke-width:2px,color:#bbf7d0,font-weight:bold
-  classDef halt     fill:#7f1d1d,stroke:#ef4444,stroke-width:2.5px,color:#fecaca,font-weight:bold
-  classDef danger   fill:#7f1d1d,stroke:#f87171,stroke-width:2px,color:#fecaca
-  classDef storage  fill:#4a1d96,stroke:#a78bfa,stroke-width:1.5px,color:#ede9fe
-  classDef branchA  fill:#064e3b,stroke:#34d399,stroke-width:1.5px,color:#a7f3d0
-  classDef branchB  fill:#451a03,stroke:#fb923c,stroke-width:1.5px,color:#fed7aa
-  classDef branchC  fill:#450a0a,stroke:#f87171,stroke-width:1.5px,color:#fecaca
+  %% ── STYLES — light mode ──────────────────────────────
+  classDef entry    fill:#ccfbf1,stroke:#0d9488,stroke-width:2px,color:#134e4a,font-weight:bold
+  classDef endnode  fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f,font-weight:bold
+  classDef step     fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e
+  classDef autonode fill:#fff7ed,stroke:#ea580c,stroke-width:1.5px,color:#7c2d12
+  classDef gate     fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d,font-weight:bold
+  classDef halt     fill:#fee2e2,stroke:#dc2626,stroke-width:2.5px,color:#7f1d1d,font-weight:bold
+  classDef danger   fill:#fecaca,stroke:#ef4444,stroke-width:2px,color:#7f1d1d
+  classDef storage  fill:#ede9fe,stroke:#7c3aed,stroke-width:1.5px,color:#4c1d95
+  classDef branchA  fill:#d1fae5,stroke:#059669,stroke-width:1.5px,color:#064e3b
+  classDef branchB  fill:#ffedd5,stroke:#f97316,stroke-width:1.5px,color:#7c2d12
+  classDef branchC  fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px,color:#7f1d1d
 ```
 
 | Symbol | Meaning |
 |--------|---------|
 | 🟢 Teal pill | Session start / end |
 | 🟩 Green diamond | Scoring gate — 5/5 required · loops back on fail |
-| 🟦 Teal rectangle | Process step — auto-executes |
-| 🟧 Orange rectangle | Automation side-node — Tier 3 `APPROVE PHRASE` |
+| 🟦 Blue rectangle | Process step — auto-executes |
+| 🟧 Orange rectangle | Automation node — MCP or Tier 3 `APPROVE PHRASE` |
 | 🟥 Red rounded pill | **Mismatch halt** — workflow stops entirely |
 | 🟣 Purple rectangle | File storage — local download always before cloud |
-| 🔴 Dark red rectangle | Irreversible action — `APPROVE SUBMIT` / `APPROVE FILL` |
+| 🔴 Light-red rectangle | Irreversible action — `APPROVE SUBMIT` / `APPROVE FILL` |
 | `- -` Dashed arrow | Loop back to Phase 0 after successful submission |
 
 ---
