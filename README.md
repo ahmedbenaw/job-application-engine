@@ -19,7 +19,9 @@ recommends available options.
 ## Quick Start
 
 1. [Download `JAE-v2.1.1-Generic-Universal-2026-04-25.zip` from the v2.1.1 release Assets](https://github.com/ahmedbenaw/job-application-engine/releases/tag/v2.1.1)
-2. Install the skill: **Claude.ai / Claude CoWork** — **Customize → Skills → Create Skill → Upload ZIP**. **Manus** — **Skills → + Add → Upload** or **Import from GitHub** (see [Platform Setup](#platform-setup)).
+2. Install the skill: 
+**Claude.ai / Claude CoWork** — **Customize → Skills → Create Skill → Upload ZIP**. 
+**Manus** — **Skills → + Add → Upload** or **Import from GitHub** (see [Platform Setup](#platform-setup)).
 3. Choose your entry mode:
 
 **Mode A — Discover roles matching your profile:**
