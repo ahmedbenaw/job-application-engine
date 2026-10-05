@@ -1,1416 +1,604 @@
 ---
 name: job-application-engine
-version: 2.1.1
-edition: generic-universal
-author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect
 description: |
-  Universal end-to-end job application system. Works for any candidate, any
-  role, any industry. Supports two session entry modes. Mode A — Job
-  Discovery: the user wants to find matching roles; the skill searches 10
-  platforms, ranks results, and guides the full application workflow.
-  Mode B — Direct Application: the user already has a specific role; they
-  upload their CV and provide the job URL, and the skill runs the full
-  workflow from Phase 1 onward, skipping discovery entirely. A Session Entry
-  Gate detects the mode automatically from uploaded files and URLs, or
-  presents both options explicitly if the mode is ambiguous. All agent logic
-  is embedded inline — no external dependencies. Triggers when a user uploads
-  a CV, pastes a job URL, says "find me jobs", "apply for this role", "I
-  want to apply to [company]", "fill this application", or provides any job
-  posting URL or job description text.
-compatibility:
-  tools: [web_search, web_fetch, bash_tool, create_file, present_files]
-  platforms: [Claude.ai, Claude CoWork, Manus]
-  external_dependencies: none
-changelog:
-  - version: 2.1.1
-    date: 2026-04-25
-    notes: |
-      Repo-wide audit release: README diagram legend reconciled with runtime nodes;
-      release/version metadata normalized to v2.1.1; tag/release alignment cleanup.
-  - version: 2.1.0
-    date: 2026-04-25
-    notes: |
-      Execution modes: agent_supported (default) and cowork_autonomous (CoWork opt-in) with mandatory
-      re-anchor to phase governance; docs/EXECUTION_MODES.md; MANDATORY_EXCLUSIONS reframed;
-      automations A14–A16; rules.json execution_modes; platform-capabilities updated.
-  - version: 2.0.2
-    date: 2026-04-25
-    notes: |
-      README workflow diagram A0 subgraph aligned with SKILL.md step order (STEP 1→1C→2→2A→3→4);
-      repository structure blurb (13 automations A01–A13); changelog footer and release links v2.0.2;
-      Capability Map row labels Google Drive/OneDrive explicitly.
-  - version: 2.0.1
-    date: 2026-04-25
-    notes: |
-      Platform documentation accuracy: canonical docs/platform-capabilities.md,
-      docs/MANDATORY_EXCLUSIONS.md, docs/REMEDIATION_INVENTORY.md; Manus Skills-first
-      install; hybrid patterns hybrid_chat_review (default) and cowork_end_to_end;
-      A0 STEP 2A mandatory artifact fallback for present_files; rules.json platform_notes
-      aligned; README CoWork/Claude/Manus claims corrected; artifact_policy in
-      automation-registry.json.
-  - version: 1.0.0
-    date: 2026-04-24
-    notes: |
-      Initial generic release. All agent logic nativized: fit analysis,
-      writing quality (25 patterns across 5 families), governance gate,
-      checklist system, and hiring manager protocol embedded inline.
-      7-level job classification framework embedded with auto-detection
-      and self-identification logic. Dynamic applicant profile with full
-      field taxonomy, salary architecture, dependency map, conflict
-      resolution rules, per-field review cycles, equity fields, first-use
-      setup protocol, data persistence format, and multi-currency handling.
-      Both canonical cover letter templates incorporated with mixing guide
-      and 10 quality rules. Rules.json for machine-readable execution.
-      README for platform onboarding. MIT licence.
+  Universal end-to-end job application system for any candidate, from intern
+  to C-suite, any industry, any country. This skill should be used whenever someone wants
+  to apply for a job, find jobs, build or tailor a CV or resume, make a CV pass
+  ATS screening, fill a job application, or write a cover letter — even if they
+  only paste a job ad or upload a CV. Mode A finds and ranks roles across 10
+  platforms. Mode B applies to a specific role from a CV (or a short intake
+  questionnaire) plus a job link. Runs scored phases from company research and
+  fit analysis through CV building, an ATS test on the real CV file, the
+  application package, a combined final check and post-submission tracking,
+  with consent-gated automations. Triggers on "apply for this role", "find me
+  jobs", "tailor my CV", "make my resume ATS-friendly", "fill this application",
+  "write my cover letter", an uploaded CV, or any job URL or job ad text.
+compatibility: Claude.ai, Claude CoWork, Manus. Tools - web_search, web_fetch, bash_tool, create_file, present_files. Optional - image viewing and browser or computer control (ATS Gate visual review), job board and ATS MCPs, email, cloud storage, calendar.
+metadata:
+  version: 2.2.0
+  edition: generic-universal
+  author: Ahmed Ossama | Product Leader, Builder & Venture Management Architect
+  built_on: job-application-engine 2.1.1 (generic-universal)
+  design_record: docs/CV_ATS_REQUIREMENTS_SPEC_v0.11.0.md
+  last_verified: "2026-10-05"
+  freshness_window: 6 months
+  freshness_category: procedural
+  verified_against: []
+  verification_note: Built from CV & ATS Requirements Spec v0.11.0. Country profiles are conventions pending a local check (references/country-profiles.md).
+  license: MIT
+  owner: job-application-engine maintainers (generic edition)
+  review_trigger: every 6 months, any country-profile check, or a GATE-17 outcome review that changes a Default value
+  changelog: CHANGELOG.md
 ---
 
-# Job Application Engine — Generic Universal Edition
+# Job Application Engine — Generic Universal Edition v2.2.0
 
-A complete, standalone job application system with two session entry modes.
-No external agents, skills, or frameworks required. All logic is embedded
-in this file and the reference files in the references/ directory.
+A complete job application system with two session entry modes. Core workflow
+is in this file. Detailed protocols load on demand from `references/` (see the
+Reference Map). The design record is `docs/CV_ATS_REQUIREMENTS_SPEC_v0.11.0.md`.
 
-All 8 phases are mandatory and sequential. Every phase ends with a user
-scoring gate. A score of 5 out of 5 is required to proceed. A score below 5
-triggers a revision loop within the same phase before advancing.
+**What v2.2.0 adds:** the engine now builds and tests the CV itself. A person
+fills a short intake form once (or uploads a CV), the engine writes a tailored
+CV for each job, tests the real file the way an ATS and a recruiter would, and
+uploads only the file that passed.
 
-**Execution modes (v2.1.x):** On **Claude CoWork**, the skill supports `agent_supported` (default) and optional `cowork_autonomous` — see `docs/EXECUTION_MODES.md` and `rules.json` `execution_modes`. Mode 2 never bypasses phases or consent tiers; it re-anchors after each host execution chunk. On **Claude.ai** and **Manus**, only `agent_supported` applies.
+**What stays the same:** every v2.1.1 phase number, the 5/5 gate format, the
+consent tiers and exact approval phrases, automations A01–A16, execution modes
+and all 12 invariants.
+
+---
+
+## Session Start Sequence
+
+Run in this order before any phase:
+
+1. **Execution mode gate** — below.
+2. **A0 Capability Detection** — `references/automation-layer.md` § A0. Also
+   check for a document tool (CV export), text readers (read test) and, when
+   available, image viewing plus browser or computer control (visual review).
+3. **Profile check** — if a profile exists, run First-Use **Step 4** staleness
+   check (`references/first-use-protocol.md`). If none exists, run First-Use
+   Steps 0–3 with the intake questionnaire.
+4. **Session Entry Gate** — detect Mode A or Mode B and route.
+
+**First turn (one message, so the person isn't stopped twice):**
+1. A 3–5 line plain summary of what works in this session (A0). Show the full
+   Capability Map only when asked, or when a tool this application needs is missing.
+2. What was extracted from any CV, link or text (First-Use Step 1), for confirmation.
+3. **At most 10 questions**, only those needed to start this application
+   (see "Ask in small batches" below), as one numbered list under the heading
+   **Questions for you (N)**, where N is the number of questions, followed by
+   "about M more later".
+Replying to that message counts as "Begin" for A0 Step 4.
+
+**Phase loop rule:** at the start of every phase, print the status board and
+check that phase's automation trigger points in `references/automation-layer.md`.
+
+---
+
+## Reference Map — read only when needed
+
+| File | Read when |
+|---|---|
+| `references/first-use-protocol.md` | No profile, new CV or link (Steps 0–3); session start (Step 4); after Phases 3 and 7 (Step 5) |
+| `references/intake-questionnaire.md` | First-Use Step 2; a new target; an expired field |
+| `references/applicant-profile-template.md` | Every session — profile fields and tokens |
+| `references/workflow-integration.md` | Scoring model; handoffs between phases; Phase 6 verdict; upload; logs |
+| `references/cv-build.md` | Phase 3B; Phase 4 summary |
+| `references/ats-gate.md` | Phase 3C |
+| `references/country-profiles.md` | Phase 3 profile choice; Phases 3B and 3C |
+| `references/job-level-framework.md` | Phase 0 ranking; Phase 2 level; Phase 3 salary; CV and letter tone |
+| `references/skill-instructions/*.md` | Status board; Phase 2, 5, 6 detail |
+| `references/cover-letter-templates.md` | Phase 4 |
+| `references/salary-anchors-template.md`, `references/excluded-companies-log.md` | Phase 3 salary; Phase 0 filtering; Phase 7 logging |
+| `references/automation-layer.md`, `references/automation-playbooks/*.md` | A0; before any automation A01–A18 fires |
+| `references/automation-playbooks/vision-browser-computer-fallback.md` | A tool is missing or blocked; any visual audit (A18) |
+| `references/platform-execution-notes.md` | Platform-specific behaviour |
+| `scripts/ats_gate.py` | Phase 3C counted checks; records the PASS and verifies uploads |
+| `scripts/selftest.py`, `evals/`, `hooks/` | Maintenance: self-test harness, test cases and grader, optional enforcement hooks |
+| `rules.json`, `automation-registry.json` | Machine-readable workflow and automation scope |
+
+---
+
+## Fallback ladder and visual audits (A18)
+
+Never stop just because one tool is missing. Detail:
+`references/automation-playbooks/vision-browser-computer-fallback.md`.
+
+1. Connector (MCP) → 2. native tool (web search or fetch, bash) → 3. **browser
+use** (read the page in a browser) → 4. **computer use** (open the file or page
+in a desktop app on the linked computer) → 5. **vision** (screenshot or render
+to an image and read it) → 6. ask the person to paste or upload.
+
+Use the same three abilities on purpose to audit: read a scanned CV, capture
+a form that won't fetch, view every CV page as ATS and recruiter (GATE-18),
+screenshot filled form pages before submit, and check the portal's preview of
+the uploaded CV. Falling back never lowers a consent tier. The person logs in
+themselves; never type or store credentials. Each grade line names the rung
+used when it isn't 1 or 2.
+
+**Capability wording (what the person is told).** Promise only what this
+session can do:
+
+1. **No brand names:** don't name a browser, browser-automation product or
+   desktop-app brand to the person. Say "browser control", "a document app",
+   "a PDF viewer".
+2. **No promises beyond the map:** don't say "on your computer", and don't
+   promise an action, unless the A0 Capability Map shows the tool for it as
+   ACTIVE. Otherwise say what you will do instead.
+3. **Form filling:** say "I can fill the form if you approve each step" only when
+   browser control is ACTIVE. Otherwise say "I'll give you answers to paste",
+   and don't offer filling as a later or "if connected" option either.
 
 ---
 
 ## Execution mode gate (run once per session — before A0)
 
-Set and record the session execution mode **before** A0 Capability Detection. Write the mode on the status board (e.g. `Execution mode: agent_supported`).
+Record the mode on the status board (e.g. `Execution mode: agent_supported`).
 
-**Claude.ai and Manus**
-
-- Use **`agent_supported`** only. Do not offer Mode 2.
-
-**Claude CoWork**
-
-1. Present:
-   - **Mode 1 — `agent_supported` (default):** guided phase flow, scoring gates, Tier 2/3 consent — current behavior.
-   - **Mode 2 — `cowork_autonomous` (optional):** allows larger multi-step host execution **chunks** only while **re-anchoring** to the same eight-phase law after each chunk (A15/A16). Irreversible actions use the same Tier 2/3 rules unless a future version says otherwise.
-2. If the user sends an **opt-in phrase** exactly as in `rules.json` → `execution_modes.cowork_autonomous.opt_in_phrases_exact`, set mode to **`cowork_autonomous`**.
-3. If the user sends **`JAE MODE: AGENT_SUPPORTED`**, set mode to **`agent_supported`**.
-4. If the user does not opt in, keep **`agent_supported`**.
-
-**Mode 2 operational rule (non-negotiable):** After every autonomous **chunk** (A14 when used), run **A15 — governance re-anchor** and **A16 — drift/scope verification** before starting the next chunk or advancing phases. If anything conflicts with the current phase objective, invariants, or registry scope, **stop** and return to a normal agent-supported checkpoint (present status, reconcile with the user).
+- **Claude.ai and Manus:** `agent_supported` only.
+- **Claude CoWork:** offer Mode 1 `agent_supported` (default) and Mode 2
+  `cowork_autonomous` (opt-in phrase exactly as in `rules.json` →
+  `execution_modes.cowork_autonomous.opt_in_phrases_exact`). `JAE MODE:
+  AGENT_SUPPORTED` switches back.
+- **Mode 2 rule (non-negotiable):** after every autonomous chunk (A14), run
+  A15 governance re-anchor and A16 drift check before the next chunk or phase.
+  Phases 3B and 3C are covered like every other phase. Details:
+  `docs/EXECUTION_MODES.md`.
 
 ---
 
-## First-Use Setup Protocol
+## Scoring, approval and visible grades
 
-Run this protocol when no applicant profile exists, or when the user explicitly
-asks to rebuild or update their profile. Execute the four steps in order. Never
-skip Step 0 — document detection must always run first.
+Full rules: `references/workflow-integration.md` (RES-11, INT-05).
+
+**Five mandatory gates per application.** Each uses the unchanged v2.1.1 gate
+format and needs 5/5. Below 5 reruns the phases that gate covers.
+
+| Gate | After | Covers |
+|---|---|---|
+| M1 Company brief | Phase 1 | Phase 1 |
+| M2 Fit | Phase 2 | Step 2A job analysis + fit analysis |
+| M3 Facts | Phase 3 | Phase 3 |
+| M4 CV text | Phase 3B | CV build, critique, style pass |
+| M5 Package | Phase 5 | Phase 4 package + Phase 5 package pass |
+
+Plus the **one-time setup sign-off** (First-Use Step 3), once per person.
+
+**Complementary scores** for every other phase (0, 2A, CV critique, 3C ATS
+Gate, 6 combined verdict, 7): each scores itself 1–5 from its own checks
+(5 all pass · 4 Should-level issues only · 3 three or more waivers or warnings
+· 1–2 a Must check failed). The person may add a score and a one-line "what
+would perfect look like" note at any time before the next mandatory gate.
+
+**Escalation:** a complementary phase becomes a blocking 5/5 gate when its
+automatic score is 3 or lower, or when the person scores it below 5.
+
+**Visible grades:** every complementary phase prints one line the moment it
+finishes, and the next mandatory gate repeats all lines since the last gate:
+
+```
+ATS Gate: 4/5 · 2 warnings: file is 2.4 MB (limit 2 MB), skim test missed the job title. Not stopping.
+```
+
+**Side-effects line:** every reply that finishes Phase 3C, 4, 5 or 6, or runs
+any automation, ends with one plain line saying what left the session, for
+example "Nothing was uploaded, sent or submitted." or "Sent: cover letter to
+jobs@example.com (APPROVE SEND given)." The person never has to guess.
+
+**Confidence:** when a fact is uncertain (partly extracted, an unchecked
+country-profile rule, a salary from thin data), label it "unconfirmed", say
+why, and ask before relying on it. Never present a guess as a fact.
+
+**Approval is separate from scoring.** A score never authorises an action.
+Tier 1 runs read-only. Tier 2 needs `APPROVE [ACTION]`. Tier 3 needs the exact
+phrase (`APPROVE SUBMIT`, `APPROVE FILL`, `APPROVE SEND`) after a full data
+preview. All scores and notes go to the application log (Phase 7).
 
 ---
 
-### STEP 0 — Document and Link Detection (always runs first)
+## Status board
 
-Before presenting any questions, check the current session for available data
-sources. The skill must attempt to extract profile fields from every available
-source before asking the user to type anything manually.
-
-**Check for uploaded files:**
-If any file is attached to the session (PDF, DOCX, image of a CV, LinkedIn
-export, or any text file), read it immediately using the appropriate tool.
-Documents to look for and what to extract from each:
-
-CV or resume (PDF or DOCX):
-Extract → [CANDIDATE_NAME], [PRIMARY_EMAIL], [PRIMARY_PHONE], [LINKEDIN_URL],
-[PORTFOLIO_URL], [CURRENT_CITY], [CURRENT_COUNTRY], [NATIONALITY],
-education history (institution, degree, graduation year), certifications,
-work history (company, role, dates, key outcomes — feeds [KEY_EVIDENCE]),
-tools and technologies mentioned (feeds [TOOLS_STACK]),
-languages listed (feeds [LANGUAGE_PROFICIENCY]),
-professional headline or summary (feeds [POSITIONING_HEADLINE]).
-
-LinkedIn PDF export or profile screenshot:
-Extract → same fields as CV above, plus connection count as a signal of
-network strength, and any published articles or recommendations.
-
-Portfolio document or project list:
-Extract → project names, outcomes, tools used, URLs — feed into
-[KEY_EVIDENCE] and [PORTFOLIO_ASSETS].
-
-**Check for URLs or links in the user's opening message:**
-If the user has pasted any URLs, fetch and parse each one:
-
-LinkedIn public profile URL (`linkedin.com/in/[handle]`):
-Fetch with web_fetch → extract name, headline, current role, work history,
-education, skills, certifications, and contact information.
-
-GitHub profile URL (`github.com/[handle]`):
-Fetch with web_fetch → extract repositories, languages, top projects,
-README content for project context — feeds [TOOLS_STACK] and [PORTFOLIO_ASSETS].
-
-Personal website or portfolio URL:
-Fetch with web_fetch → extract professional bio, project descriptions,
-contact information — feeds [POSITIONING_HEADLINE] and [KEY_EVIDENCE].
-
-Behance, Dribbble, or similar creative portfolio URL:
-Fetch with web_fetch → extract project names, descriptions, tools — feeds
-[KEY_EVIDENCE] and [PORTFOLIO_ASSETS].
-
-**Check for inline text:**
-If the user's opening message describes their background, role, or situation
-in any way, extract every usable data point from it before asking questions.
-
-After extraction, build a preliminary field map showing:
-- Fields successfully extracted with their extracted values
-- Fields partially extracted (value found but needs confirmation)
-- Fields not found (will require a question)
-
----
-
-### STEP 1 — Present Extraction Results
-
-Present what was extracted in this format:
-
-```
-── PROFILE EXTRACTION RESULTS ──────────────────────────────────────
-Source(s) used: [list each document or URL that was read]
-
-EXTRACTED — confirm or correct each:
-  Full name           : [extracted value]
-  Email               : [extracted value]
-  Phone               : [extracted value]
-  LinkedIn            : [extracted value]
-  Portfolio           : [extracted value]
-  Current location    : [extracted value]
-  ...
-
-PARTIALLY EXTRACTED — review needed:
-  [field]             : [extracted value] — is this current?
-
-NOT FOUND — will ask below:
-  [list of fields that could not be extracted]
-
-Review the extracted values above. Reply with:
-  - CONFIRM to accept all extracted values as shown
-  - Any corrections in the format: [FIELD]: [corrected value]
-  - Or a numbered list of corrections if multiple fields need updating
-────────────────────────────────────────────────────────────────────
-```
-
-If no documents or links were provided, skip Step 1 and go directly to Step 2
-with all fields in the NOT FOUND category.
-
----
-
-### STEP 2 — Gap-Fill Questions
-
-Ask only for fields that were not extracted or were flagged as needing
-confirmation. Group by section. Do not re-ask for confirmed fields.
-
-Present only the applicable questions from this master list:
-
-STATIC FIELDS (if not extracted):
-  — Full name
-  — Primary email address
-  — Primary phone number with country code
-  — LinkedIn profile URL
-  — Portfolio URL (GitHub, Behance, Dribbble, personal site, or similar)
-  — Nationality and passport country
-  — Current city and country of residence
-  — Education history (institution, degree, graduation year — most recent first)
-  — Certifications relevant to your target roles
-  — Any geography you will never apply to (hard exclusions — countries or regions)
-
-DYNAMIC FIELDS (if not extracted or inferred):
-  — Your primary professional title as you currently present it
-  — Your target role types (e.g. Product Manager, UX Designer, Data Analyst)
-  — Your target seniority level (see Level Classification Framework — state
-    your primary target level and acceptable range)
-  — Your target sectors (e.g. SaaS, FinTech, Healthcare, EdTech)
-  — Your preferred cities or regions for new roles
-  — Are you open to relocation? If yes, which cities are preferred?
-  — Your current availability (days or weeks from an offer to your start date)
-  — Any active notice period or engagement that affects your start date
-  — Your tools and technology stack (every tool you use professionally)
-  — Your top 3–5 career achievements with company name, metric, and context
-  — Language proficiency (list each language and your current level)
-
-COMPENSATION FIELDS:
-  — Your target gross annual salary for your primary target market
-  — Currency for each market you are targeting
-  — Are you open to equity? If yes, minimum acceptable vesting schedule?
-  — Any compensation structure you will not accept
-
-If the user provided a CV or LinkedIn profile and all fields were successfully
-extracted, Step 2 may have zero questions. Proceed directly to Step 3.
-
----
-
-### STEP 3 — Profile Confirmation and Sign-Off
-
-Present the complete populated profile — all extracted and gap-filled values
-together — as a single readable summary. Ask the user to review the full
-profile and confirm it is accurate before the first session begins.
-
-Apply the scoring gate:
-```
-── PROFILE SETUP REVIEW GATE ──────────────────────────────────────
-Your Applicant Profile is ready. Review the full profile above and respond:
-  1. What was correct
-  2. Your score from 1 to 5  (5 required to proceed)
-  3. What needs correcting before we begin
-If score < 5, apply corrections and re-present the profile.
-───────────────────────────────────────────────────────────────────
-```
-
-After score of 5: write all confirmed values into
-references/applicant-profile-template.md and proceed to Phase 0.
-
----
-
-### STEP 4 — Returning Session Profile Staleness Check
-
-When a profile already exists, run this check at every session start before
-Phase 0 begins. Do not run the full First-Use Protocol — only check the
-fields listed below.
-
-Time-sensitive fields that decay and must be re-confirmed if stale:
-
-Availability and notice period: re-confirm at every session. This field
-can change weekly. Do not use a value more than 2 weeks old without
-re-confirming.
-
-Salary anchors: flag any market entry whose source date is older than
-6 months. Ask the user to confirm whether the anchor is still accurate
-before Phase 3 salary research runs.
-
-Active engagement or constraint: if the profile shows an active engagement,
-confirm at session start whether it is still active and whether the end date
-or notice period has changed.
-
-Present stale fields in this format:
-
-```
-── PROFILE STALENESS CHECK ─────────────────────────────────────────
-The following profile fields may be out of date:
-
-  Availability     : [current value] — last confirmed [date]
-  Salary anchor    : [market] — sourced [date], refresh due [date]
-  Active engagement: [current value] — still active?
-
-Confirm each or provide an update. Type CONFIRM to accept all as-is,
-or correct the specific fields that have changed.
-────────────────────────────────────────────────────────────────────
-```
-
----
-
-### STEP 5 — Per-Application Profile Update Protocol
-
-This step runs automatically at specific points during the workflow —
-not just at first use. It is the mechanism that keeps the profile current
-across applications.
-
-**After Phase 3 (Clarifying Intake):**
-If any of the following were collected or confirmed during Phase 3 and differ
-from the current profile values, flag them for update:
-- Portfolio URL (if a new or updated link was provided)
-- Salary figure confirmed for a new market (update salary anchors)
-- Availability or notice period change
-- Language level updated (e.g. user mentioned they passed an assessment)
-- New tool added to the stack (user mentioned using a tool not in the profile)
-
-Present as:
-
-```
-── PROFILE UPDATE OPPORTUNITY ──────────────────────────────────────
-New information from this session differs from your profile:
-  [field]  : current → [current profile value]
-             new     → [value from this session]
-
-Update your profile with this new information?
-Type APPROVE UPDATE to apply, or SKIP to continue without updating.
-────────────────────────────────────────────────────────────────────
-```
-
-Tier 2 action — requires APPROVE UPDATE before writing to the profile.
-
-**After Phase 7 (Post-Submission Loop):**
-After every session close, run this update check regardless of branch:
-
-Branch A (submitted): update the excluded-companies-log with outcome
-"Submitted" and date. If an interview or offer follows in a later session,
-update the salary anchors with ground-truth offer data.
-
-Branch B (withdrawn): update excluded-companies-log with outcome "Withdrawn"
-and the reason. If the reason reveals a recurring gap (e.g. always too design-
-heavy), flag this to the user as a potential profile adjustment — perhaps the
-target role type or sector emphasis needs updating.
-
-Branch C (rejected): update excluded-companies-log with outcome "Rejected".
-Identify which profile field the rejection most likely traces to (using Phase 2
-gap analysis). Ask whether to adjust the target seniority level, sector
-emphasis, or positioning headline to reduce this gap in future applications.
-
-All post-Phase 7 updates require APPROVE UPDATE (Tier 2) before writing
-to the profile.
-
-**Document upload mid-session:**
-If the user uploads a document or provides a new URL at any point during an
-active session (not just at first-use), run Step 0 extraction immediately
-on the new source. Surface any fields that differ from the current profile
-and offer to update them via APPROVE UPDATE before continuing.
-
----
-
-## Dynamic Session Checklist
-
-Print this board at the start of every phase. Update status and score after
-each gate. Replace bracketed tokens with live session values.
+Print at the start of every phase. Update after each gate or grade line.
 
 ```
 ╔════════════════════════════════════════════════════════════════════╗
 ║          JOB APPLICATION ENGINE — SESSION STATUS BOARD            ║
 ╠════════════════════════════════════════════════════════════════════╣
-║  Phase 0 │ Job Discovery          │ [STATUS] │ Score: [ /5]       ║
-║  Phase 1 │ Company Intelligence   │ [STATUS] │ Score: [ /5]       ║
-║  Phase 2 │ Fit Analysis           │ [STATUS] │ Score: [ /5]       ║
-║  Phase 3 │ Clarifying Intake      │ [STATUS] │ Score: [ /5]       ║
-║  Phase 4 │ Application Package    │ [STATUS] │ Score: [ /5]       ║
-║  Phase 5 │ Writing Quality Pass   │ [STATUS] │ Score: [ /5]       ║
-║  Phase 6 │ Governance Gate        │ [STATUS] │ Score: [ /5]       ║
-║  Phase 7 │ Post-Submission Loop   │ [STATUS] │ Score: [ /5]       ║
+║  Setup    │ Profile + intake        │ [STATUS] │ Readiness [ /5]  ║
+║  Phase 0  │ Job Discovery           │ [STATUS] │ Grade [ /5]      ║
+║  Phase 1  │ Company Intelligence    │ [STATUS] │ M1 Score [ /5]   ║
+║  Phase 2A │ Job Analysis            │ [STATUS] │ Grade [ /5]      ║
+║  Phase 2  │ Fit Analysis            │ [STATUS] │ M2 Score [ /5]   ║
+║  Phase 3  │ Clarifying Intake       │ [STATUS] │ M3 Score [ /5]   ║
+║  Phase 3B │ CV Build                │ [STATUS] │ M4 Score [ /5]   ║
+║  Phase 3C │ ATS Gate                │ [STATUS] │ Grade [ /5]      ║
+║  Phase 4  │ Application Package     │ [STATUS] │ —                ║
+║  Phase 5  │ Writing Quality Pass    │ [STATUS] │ M5 Score [ /5]   ║
+║  Phase 6  │ Combined Final Verdict  │ [STATUS] │ Grade [ /5]      ║
+║  Phase 7  │ Post-Submission Loop    │ [STATUS] │ Grade [ /5]      ║
 ╠════════════════════════════════════════════════════════════════════╣
-║  Active Phase : [PHASE NAME]                                      ║
-║  Current Gate : [GATE DESCRIPTION]                                ║
-║  Awaiting     : [WHAT IS NEEDED FROM USER]                        ║
-║  Candidate    : [CANDIDATE_NAME]                                  ║
-║  Session Role : [ROLE_TITLE]     Company: [COMPANY_NAME]          ║
+║  Execution mode : [MODE]        Session mode: [A / B]              ║
+║  Awaiting       : [WHAT IS NEEDED FROM THE USER]                   ║
+║  Candidate      : [CANDIDATE_NAME]                                 ║
+║  Role / Company : [ROLE_TITLE] / [COMPANY_NAME]                    ║
 ╚════════════════════════════════════════════════════════════════════╝
-
-Status codes: ⏳ Pending | 🔄 Active | 🔁 Revision | ✅ Complete | 🚫 Blocked
+Status: ⏳ Pending | 🔄 Active | 🔁 Revision | ✅ Complete | ✅ Skipped | 🚫 Blocked
 ```
 
-Example (Alex M., fictional mock candidate):
-```
-║  Candidate    : Alex M.                                           ║
-║  Session Role : Senior Product Manager    Company: CloudBase Inc  ║
-║  Phase 2      : Fit Analysis    │ ✅ Complete │ Score: 5/5        ║
-```
-
-Scoring gate format — present after every phase output:
-
-```
-── PHASE [N] REVIEW GATE ──────────────────────────────────────────
-Please respond with:
-  1. What was correct
-  2. Your score from 1 to 5  (5 required to proceed)
-  3. What you expected for a perfect result at this phase
-If score < 5, state what to revise. This phase reruns before advancing.
-───────────────────────────────────────────────────────────────────
-```
+Mode B marks Phase 0 `✅ Skipped`. More board rules: `references/skill-instructions/checklist-templates.md`.
 
 ---
 
-## Inline Module 1 — Job Level Classification Framework
+## First-Use Setup and the intake questionnaire
 
-This framework is used in Phase 0 (discovery filtering), Phase 2 (fit
-analysis — role level detection), Phase 3 (salary research anchoring),
-and Phase 4 (positioning headline and summary selection).
+Follow `references/first-use-protocol.md` exactly. In v2.2.0, Step 2 asks its
+questions through the intake questionnaire v4 (`references/intake-questionnaire.md`):
 
-Auto-detection: read the JD title, scope, reporting line, and team size
-to assign a level. Do not rely on the title alone — a startup "Head of"
-may carry Level 4 scope; an enterprise "Senior Manager" may carry Level 6
-scope. Read the responsibilities to confirm.
+1. **Extract first** (Step 0) from any CV, LinkedIn export, link or pasted text.
+2. **Show what was found** (Step 1).
+3. **Ask only the gaps** (Step 2), using the questionnaire path chosen by Q0.1:
+   first job · career change · returning · experienced · executive. "N/A" is
+   always accepted. Never guess a value.
+4. **Ask in small batches** (INQ-09): never more than 10 questions in one
+   message. First batch = what this application needs now (target, contact,
+   eligibility and start date). Ask the rest where it is used: pay and
+   format preferences in Phase 3, missing role details and results in Phase
+   3B. Experienced people are asked only for gaps their CV leaves.
+5. **Sign off once** (Step 3, 5/5) and print the readiness grade.
+6. **Keep fresh** (Step 4) using each field's expiry; **update with approval**
+   (Step 5, `APPROVE UPDATE`).
 
-Self-identification: if the user has not stated a target level, ask them
-to identify their primary target and acceptable range before Phase 0 runs.
-
-```
-LEVEL 0 — NOVICE
-  Titles:    Intern
-  Scope:     Learning under supervision, no independent ownership
-  Salary:    Stipend or entry-level band; varies widely by market
-
-LEVEL 1 — ENTRY
-  Titles:    Junior [Role], Associate [Role], Graduate [Role]
-  Scope:     Defined tasks with guidance; limited independent decision-making
-  Salary:    Market entry band; 0–3 years experience typical
-
-LEVEL 2 — MID
-  Titles:    [Role] (no qualifier), Associate [Role] with full responsibility
-  Scope:     Independent execution on defined scope; some cross-functional work
-  Salary:    Mid-market band; 3–6 years experience typical
-
-LEVEL 3 — SENIOR
-  Titles:    Senior [Role], Team Lead [Role], Staff [Role]
-  Scope:     Independent ownership of a product area or function; mentors
-             junior team members; influences roadmap or direction
-  Salary:    Upper-market band; 6–10 years experience typical
-
-LEVEL 4 — MANAGER
-  Titles:    Manager, Principal, Group [Role]
-  Scope:     Manages a team or significant product area; owns budget or
-             headcount; accountable for team output
-  Salary:    Management band; 8–12 years experience typical
-
-LEVEL 5 — DIRECTOR
-  Titles:    Director, Senior Director
-  Scope:     Owns a department or major product line; sets strategy within
-             a business unit; reports to VP or C-Suite
-  Salary:    Director band; 12–18 years experience typical
-
-LEVEL 6 — HEAD / VP
-  Titles:    Head of [Function], VP of [Function], VP
-  Scope:     Owns an entire function across the organisation; sets strategy;
-             hires and structures the team; board-level visibility
-  Salary:    VP band; 15+ years experience typical
-
-LEVEL 7 — EXECUTIVE
-  Titles:    C-Suite (CPO, CTO, CEO, CFO, COO), Managing Director, President
-  Scope:     Full organisational or company-wide accountability; owns P&L or
-             equivalent; reports to board or investors
-  Salary:    Executive band; equity is a significant component at this level
-```
-
-Startup title calibration rule: at companies under 50 people, subtract one
-level from the title to estimate true scope. A "Head of Product" at a 15-
-person startup is typically Level 4–5 scope. At a 500-person company, the
-same title is Level 6 scope.
-
-Level-to-strategy mapping:
-
-  Levels 0–2: Cover letter leads with potential and learning velocity.
-    Evidence emphasises growth, adaptability, and early impact.
-    Salary: use the floor-to-midpoint of the market band.
-
-  Levels 3–4: Cover letter leads with delivery track record.
-    Evidence emphasises owned outcomes, team collaboration, metrics.
-    Salary: use the midpoint-to-75th percentile of the market band.
-
-  Levels 5–6: Cover letter leads with strategic impact and organisational
-    influence. Evidence emphasises direction-setting, stakeholder management,
-    business outcomes, and team-building at scale.
-    Salary: use the 75th percentile to stretch of the market band.
-
-  Level 7: Cover letter leads with vision, governance, and systemic impact.
-    Evidence emphasises P&L ownership, board relationships, market positioning.
-    Salary: custom negotiation; benchmark against public comp data and equity.
+Each filled Section 1 (Target) becomes one positioning track with its own base
+CV: 2 per person recommended, a 3rd only when targets truly differ. Every
+result gets an evidence ID. Fields marked *Private* are never printed on a CV.
+Government ID numbers are never collected. Any language other than English or
+Arabic is auto-translated from the English master; the person confirms the
+English copy of key fields at sign-off.
 
 ---
 
 ## Session Entry Gate
 
-This gate runs after A0 Capability Detection and before any phase begins.
-It determines which of the two session modes the user is in and routes
-the session accordingly. Never skip this gate. Never assume the mode.
+Runs after A0 and before any phase. Never skip it. Never assume the mode.
 
----
+**Mode B signals (skip Phase 0):** an uploaded CV, resume or portfolio; a URL
+to a job posting or application form (linkedin.com/jobs, boards.greenhouse.io,
+lever.co, breezy.hr, careers pages); phrases such as "apply for this", "I found
+a job", "help me apply", "fill in this application", a job title plus company,
+or a pasted job ad or form.
 
-### Detecting the Session Mode
+**Mode A signals (Phase 0):** no file and no job URL; "find me jobs", "search
+for roles", "what jobs match my CV", or a general target without a specific
+company; "continue" or "next" after a Phase 7 Branch A session.
 
-Before presenting any phase, scan the session for the following signals:
+**No CV and no job link, but "help me apply":** treat as Mode A (discovery)
+after setup, and say that pasting a job link switches to Mode B.
 
-**Signals for Mode B — Direct Application (skip Phase 0):**
-- A file is uploaded to the session (CV, resume, portfolio)
-- A URL is pasted that resolves to a job posting, job description, or
-  application form (e.g. linkedin.com/jobs, boards.greenhouse.io, lever.co,
-  breezy.hr, company careers page, or any URL with job-related path)
-- The user's opening message contains any of: "apply for this", "I found a
-  job", "here is the job", "I want to apply to", "this role", "help me apply",
-  "fill in this application", a job title + company name together, or pastes
-  a JD or application form text directly
-
-**Signals for Mode A — Discovery (proceed to Phase 0):**
-- No file uploaded and no job URL provided
-- User asks to "find me jobs", "search for roles", "what jobs match my CV",
-  or describes a general target (role type, sector, city) without a specific
-  company or URL
-- User says "continue" or "next" from a previous Phase 7 Branch A session
-
-**If signals are ambiguous** (e.g. a CV is uploaded but no job URL):
-Present the mode selection to the user explicitly (see below).
-
----
-
-### Mode Selection Prompt
-
-If the session mode cannot be determined from signals alone, present this:
+**Ambiguous** (for example a CV but no job URL): present this choice.
 
 ```
 ── SESSION START ────────────────────────────────────────────────────
 How would you like to begin?
 
   MODE A — Job Discovery
-  I will search 10 platforms for roles matching your profile,
-  rank the results, and then guide you through the full
-  application workflow for whichever role you select.
-  → Say "Discover" or describe a target role/city/sector.
+  I will search 10 platforms for roles matching your profile, rank
+  them, and guide the full application for the role you pick.
+  → Say "Discover" or describe a target role, city or sector.
 
   MODE B — Apply to a Specific Role
-  You already have a job in mind. Provide your CV (upload the
-  file) and the job description URL or application link, and I
-  will run the full application workflow for that specific role —
-  skipping the discovery phase entirely.
-  → Upload your CV and paste the job URL, or say "Apply" and
-    I will ask you for both.
-
-Which would you like to do?
+  Give me your CV (or fill the short intake form) and the job link,
+  and I will run the full application for that role.
+  → Upload your CV and paste the job URL, or say "Apply".
 ────────────────────────────────────────────────────────────────────
 ```
 
----
-
-### Mode A — Job Discovery Entry
-
-Proceed to Phase 0 as defined below. The cold-start branch in Phase 0
-handles the case where no prior anchor role exists.
-
----
-
-### Mode B — Direct Application Entry
-
-**Step 1 — Collect required inputs:**
-The user must provide two things before Phase 1 can begin:
-  (a) CV or resume — uploaded as PDF or DOCX, or pasted as text
-  (b) Job URL — the posting URL, application form URL, or a paste of the JD
-
-If either is missing, prompt for it specifically:
-
-```
-── MODE B INTAKE ────────────────────────────────────────────────────
-To apply to a specific role I need:
-
-  1. Your CV or resume — upload the file (PDF or DOCX) or paste
-     the text directly into this conversation.
-
-  2. The job URL — paste the link to the job posting or application
-     form. If the company sent you the JD by email, paste the text
-     of the JD here instead.
-
-Provide both and I will begin immediately.
-────────────────────────────────────────────────────────────────────
-```
-
-**Step 2 — Process inputs in parallel:**
-Run these two operations simultaneously:
-  (a) Feed the CV into the First-Use Setup Protocol Step 0 extraction.
-      If a profile already exists, run the staleness check and note any
-      fields the CV updates.
-  (b) Feed the job URL into Phase 1 (Company Intelligence) directly.
-      web_fetch the URL. If the URL is an application form, also extract
-      the form fields as per the platform-aware form-fetch strategy.
-
-**Step 3 — Skip Phase 0 entirely.**
-Phase 0 (Job Discovery) is not relevant in Mode B. Update the session
-checklist to mark Phase 0 as ✅ Skipped and proceed directly to Phase 1.
-
-Do not ask the user "what role type, sector, geography are you targeting?"
-in Mode B. That question belongs to Mode A cold-start only.
-
-**Step 4 — Proceed from Phase 1 onward.**
-The session now follows the standard workflow from Phase 1 through Phase 7.
-All phases, scoring gates, automation recommendations, and consent gates
-operate identically in both modes from Phase 1 onward.
+**Mode B intake:** collect (a) a CV as PDF, DOCX or text — or, when the person
+has no CV, the intake questionnaire — and (b) the job URL or pasted job ad.
+Ask specifically for whichever is missing. Then in parallel: feed (a) into
+First-Use Step 0 (or the staleness check if a profile exists), and feed (b)
+into Phase 1. Mark Phase 0 `✅ Skipped`. Do not ask Mode A cold-start
+questions in Mode B. From Phase 1 onward both modes run identically.
 
 ---
 
-### Dynamic Checklist — Mode B Display
+## Phase 0 — Job Discovery (Mode A only)
 
-In Mode B sessions, update the checklist header to reflect the skipped phase:
+Cold start (no anchor, no stated target): ask for role type, seniority level,
+sector and geography; confirm the level with `references/job-level-framework.md`.
 
-```
-╔════════════════════════════════════════════════════════════════════╗
-║          JOB APPLICATION ENGINE — SESSION STATUS BOARD            ║
-╠════════════════════════════════════════════════════════════════════╣
-║  Phase 0 │ Job Discovery          │ ✅ Skipped  │ Mode B          ║
-║  Phase 1 │ Company Intelligence   │ [STATUS]    │ Score: [ /5]   ║
-...
-```
+Read from the profile: `[TARGET_ROLE_TYPES]`, `[TARGET_SENIORITY_LEVEL]`,
+`[TARGET_SECTORS]`, `[PREFERRED_CITIES]`, `[HARD_EXCLUSION_GEOGRAPHIES]`, and
+the intake answers Q1.7–Q1.9 and Q3.2 (relocation, sponsorship need).
 
----
+Search in parallel, applying exclusions before presenting: LinkedIn Jobs |
+Indeed | Wellfound | Relocate.me | EuroTechJobs | Greenhouse | Lever |
+Breezy HR | Welcome to the Jungle / Otta | RemoteOK. Pass 1: similarity anchor
+(role, city, relocation, sector). Pass 2: CV-fit broadened (top skills,
+sectors, years, region). Use job board MCPs when A0 found them (A12).
 
-## Phase 0 — Job Discovery
-
-MODE A ONLY. This phase does not run in Mode B sessions. If the session
-is Mode B, Phase 0 is marked ✅ Skipped in the checklist and the workflow
-proceeds directly from Phase 1.
-
-Print checklist with Phase 0 set to 🔄 Active before running any searches.
-
-COLD-START BRANCH (Mode A, no prior anchor): If no prior application exists
-as a similarity anchor and the user has not stated a target role, prompt:
-"What role type, seniority level, sector, and preferred geography are you
-targeting?" Collect all four inputs. Use the Level Classification above to
-confirm the seniority target before building queries. Do NOT run this branch
-in Mode B — Mode B users have already defined their target via the job URL.
-
-Read references/applicant-profile-template.md to extract:
-  [TARGET_ROLE_TYPES], [TARGET_SENIORITY_LEVEL], [TARGET_SECTORS],
-  [PREFERRED_CITIES], [HARD_EXCLUSION_GEOGRAPHIES]
-
-Search platforms — run in parallel, apply exclusion filter before presenting:
-LinkedIn Jobs | Indeed | Wellfound / AngelList | Relocate.me | EuroTechJobs |
-Greenhouse (boards.greenhouse.io) | Lever (jobs.lever.co) | Breezy HR |
-Welcome to the Jungle / Otta | RemoteOK
-
-Pass 1 — Similarity anchor (adapt to stated role and level):
-  "[ROLE_TITLE]" [CITY] relocation visa sponsorship [SECTOR]
-  "[ROLE_TITLE]" OR "[ALTERNATIVE_TITLE]" [REGION] relocation SaaS FinTech
-  senior [ROLE_FUNCTION] [SECTOR] remote Europe visa sponsorship
-
-Pass 2 — CV-fit broadened (use candidate's top skills and sectors):
-  [TOP_SKILL_1] [TOP_SKILL_2] [SECTOR] [REGION] relocation visa
-  [ROLE_FUNCTION] [YEARS_EXPERIENCE] [SECTOR] [CITY] sponsorship remote
-
-Present results as ranked table:
-`Rank | Company | Role | Level | Location | Relocation | Fit Signal | URL`
-
-Add Level column using the Level Classification framework to assign a level
-to each discovered role based on the title and available JD snippet.
-
-Rank by: (1) relocation explicitly offered, (2) level match to candidate
-target, (3) role title match, (4) sector alignment. Cap at 20. Flag top 5.
-
-Example row (Alex M., fictional):
-`3 | CloudBase Inc | Sr. Product Manager | L3 | Berlin, DE | Yes | SaaS, 0-to-1 match | [URL]`
-
-Present Phase 0 scoring gate.
+Present `Rank | Company | Role | Level | Location | Relocation | Fit Signal | URL`.
+Rank by relocation offered, level match, title match, sector fit. Cap at 20,
+flag the top 5. Print the Phase 0 grade line (complementary score).
 
 ---
 
 ## Phase 1 — Company Intelligence
 
-Print updated checklist with Phase 1 set to 🔄 Active.
-
 Run four operations in parallel:
 
-OPERATION 1 — Job posting fetch:
-web_fetch the provided URL. Follow redirects. Note incomplete rendering.
+1. **Job posting fetch:** web_fetch the URL, follow redirects, note incomplete rendering.
+2. **Application form fetch:** Breezy HR append `/apply` (flag `{{ question.text }}`);
+   Greenhouse embed URL or path (custom questions often need pasting); Lever
+   append `/apply`; LinkedIn / Indeed are behind login — ask the person to paste.
+   Detect the ATS platform for REQ-30 profiles.
+3. **Hiring manager:** search `[COMPANY_NAME] [ROLE_TITLE] recruiter OR "hiring manager"`.
+   Never use "To Whom It May Concern".
+4. **Company and product research:** funding, team, stack, culture, market
+   position, a visible product gap. Every fact gets a source and date.
 
-OPERATION 2 — Application form fetch (platform-aware):
-  Breezy HR: append /apply. If {{ question.text }} appears, flag to user.
-  Greenhouse: fetch embed URL or append to posting path. Usually needs
-    manual paste for custom questions.
-  Lever: append /apply. Usually renders fully.
-  LinkedIn / Indeed: behind authentication — flag to user, paste manually.
-  Fallback: if template variables detected, instruct user to paste all
-    custom question text into the conversation before proceeding.
-
-OPERATION 3 — Hiring manager identification:
-  Search: [COMPANY_NAME] [ROLE_TITLE] recruiter OR "hiring manager" LinkedIn
-  Use result to address the cover letter to a named person.
-  If no name found: use title. Never use "To Whom It May Concern."
-
-OPERATION 4 — Company and product research:
-  Search: [COMPANY_NAME] funding team culture [CITY] [current year]
-  Search: [COMPANY_NAME] tech stack product philosophy [current year]
-
-Compile Company Intelligence Brief: what the company does (one paragraph,
-no promotional language), funding stage and investors, team size, tech stack,
-culture signals, competitive market position, hiring manager name if found,
-and any product gap or opportunity visible from public information.
-
-Example (Alex M., fictional):
-  CloudBase Inc: B2B SaaS platform for cloud cost optimisation, Series B
-  ($42M), 120 employees, HQ Berlin. Stack: React, Node.js, AWS.
-  Culture signals: "move fast, own the outcome, no hand-offs." Hiring
-  manager: Sarah K., Head of Product (identified via LinkedIn).
-
-Present Phase 1 scoring gate.
+Save the post text, form questions and platform to the handoff record
+(`references/workflow-integration.md`, INT-02). Present the brief, then **M1**.
 
 ---
 
-## Phase 2 — Fit Analysis (Inline Module)
+## Phase 2 — Fit Analysis (with Step 2A)
 
-Print updated checklist with Phase 2 set to 🔄 Active.
+Hard gate: no application text before a verdict. Detail:
+`references/skill-instructions/fit-analysis.md`.
 
-Hard gate. No application text is produced until a verdict is returned.
+**Step 2A — Job analysis** (complementary score):
+1. Number every requirement; mark must-have or nice-to-have.
+2. Build the **locked keyword list**: exact wording, weight by repetition,
+   variants and acronym pairs. Every keyword links to its requirement number.
+3. Detect the role level (scope and reporting line, not title alone). Flag a
+   gap of more than one level from the target.
+4. Compare with the track's base keyword list and print the Step 2A grade
+   line, for example: "6 of this job's 12 must-have terms are not in your base CV."
 
-STEP 1 — Role level detection:
-Assign a level from the Level Classification Framework based on JD scope,
-reporting line, and responsibilities — not title alone. Record this level
-as [DETECTED_LEVEL]. Compare to [TARGET_SENIORITY_LEVEL] in the applicant
-profile. If there is a gap of more than one level in either direction,
-flag this to the user before proceeding.
+**Fit analysis** on the same numbered list (INT-06):
+1. Two columns: strong alignment (evidence ID: company + role + outcome) and
+   honest gaps. General claims never count.
+2. Compensating evidence for each gap, stated next to it, never replacing it.
+3. Verdict: **Clean Fit** · **Honest Stretch** (1–2 mandatory gaps with offsets;
+   proceed, gap must be acknowledged) · **Mismatch** (2+ mandatory gaps without
+   offsets: HALT, inform the person, produce nothing).
+4. Start the **gap log** (REQ-39): unproven must-haves and unmet knockouts,
+   each under its requirement number, logged once.
 
-STEP 2 — Requirements extraction:
-Extract every stated requirement. Separate mandatory (must-have) from
-preferred (nice-to-have). Number them for reference.
-
-STEP 3 — Two-column evidence mapping:
-  Column A — Strong alignment: specific evidence from the applicant profile.
-    Must be traceable: company name, role, outcome, or metric.
-    General claims do not qualify. Only confirmed evidence counts.
-  Column B — Honest gaps: requirements not covered or only partially covered.
-    State plainly. No softening. No reframing as growth opportunities
-    unless the JD itself uses that language.
-
-STEP 4 — Compensating evidence:
-For every gap in Column B, identify whether any related capability exists
-that partially offsets it. State both gap and offset explicitly. An offset
-is not a denial of the gap — both must appear in the output.
-
-STEP 5 — Verdict:
-  Clean Fit: all mandatory requirements covered by direct evidence.
-  Honest Stretch: one or two mandatory gaps offset by compensating evidence.
-    Application viable. Gap must appear in cover letter and "why suitable."
-  Mismatch: two or more mandatory gaps with no compensating evidence.
-    HALT. Inform user. Do not produce application materials.
-
-STEP 6 — Session gap statement (to session log, not applicant profile):
-One paragraph: name the gap directly in one sentence, name the compensating
-evidence in one to two sentences. No hedging. No apologetic framing.
-
-Example (Alex M., fictional — Honest Stretch):
-  Gap: the JD requires hands-on React development experience; Alex's
-  profile shows product management of React-based teams but no direct
-  coding. Offset: Alex has prototyped front-end features using AI-assisted
-  coding tools and has shipped working UIs into production environments
-  in close collaboration with engineering leads, demonstrating practical
-  understanding of the constraints and patterns the role requires.
-
-Present Phase 2 scoring gate.
+Show the Step 2A line and the verdict side by side, then **M2**.
 
 ---
 
-## Phase 3 — Clarifying Questions Intake
+## Phase 3 — Clarifying Intake (before any writing)
 
-Print updated checklist with Phase 3 set to 🔄 Active.
+Present all questions in one block, labelled Critical or Important. Pre-fill
+every answer the profile already holds; the person only confirms. Ask again
+only for expired or missing fields.
 
-Present all questions in a single block. Label each Critical or Important.
+**Critical:** portfolio URL for this role · salary (read `[SALARY_TARGET_[MARKET]]`;
+if missing or "prefer not to say", run the salary research below) ·
+availability and notice · relocation and in-office days · work permit, visa
+and other knockout criteria (REQ-29) · custom questions the form rendered as
+template variables · **country profile** for this job
+(`references/country-profiles.md`; General International when no profile fits) ·
+**positioning source** (RES-10: matching track, else level version, else master).
 
-CRITICAL GATES:
-  Portfolio: most relevant URL for this specific role. What is it?
-  Salary: read applicant profile for [SALARY_TARGET_[MARKET]]. If no anchor
-    exists for this market, run salary research protocol below.
-  Availability: start date and any notice period constraint.
-  Relocation: open to relocating for this role? In-office days required?
-  Custom questions: paste any that the form rendered as template variables.
+**Important (when role-relevant):** a project that maps to the main
+requirement (tool + measurable outcome) · language level if the ad requires
+one · product trial: if the company has a public product, ask the person to
+use it for 10–15 minutes and return one specific observation (needed before
+the cover letter).
 
-IMPORTANT GATES (ask when role-relevant):
-  Specific project: project or prototype that maps to this JD's primary
-    requirement. Two sentences: tool used and measurable outcome.
-  Language level: confirm actual level if the JD lists a language requirement.
-  Product trial: if the company has a public product, ask the user to spend
-    10–15 minutes using it and return with one specific observation.
-    Do not write the cover letter before receiving this observation.
+**Salary research protocol:** search `[CITY] [ROLE_TITLE] salary [year] gross`
+on Glassdoor, Levels.fyi or similar; take floor (25th), target (50–75th
+midpoint) and stretch (90th); apply the market take-home rate from
+`references/salary-anchors-template.md`. Levels 0–2 floor to midpoint; 3–4
+midpoint to 75th; 5–7 75th to stretch. Fractional day rate = (annual FTE
+target ÷ 220) × 1.4. Store multi-currency figures separately and flag the
+exchange-rate decision to the person.
 
-SALARY RESEARCH PROTOCOL:
-  When no anchor exists for the target market, run:
-    [CITY] [ROLE_TITLE] salary [current year] gross Glassdoor
-    [CITY] [ROLE_TITLE] [LEVEL] salary [current year] Handpicked OR Levels.fyi
-  Extract floor (25th pct), target (50–75th pct midpoint), stretch (90th pct).
-  Apply market take-home rate from references/salary-anchors-template.md.
-  Present as single gross figure for form entry.
+Then **M3**. After M3, run First-Use Step 5 (profile update check).
 
-  Level adjustment: apply the level-to-strategy mapping from the Level
-  Classification Framework when selecting the percentile range:
-    Levels 0–2: floor to midpoint.
-    Levels 3–4: midpoint to 75th percentile.
-    Levels 5–7: 75th percentile to stretch.
+---
 
-  Fractional or consulting roles: day rate = (annual FTE target ÷ 220) × 1.4
+## Phase 3B — CV Build
 
-  Multi-currency roles: store both currency figures separately. Flag exchange
-  rate risk as a user decision point. Do not convert on the user's behalf.
+Rules: `references/cv-build.md`. Preconditions (INT-01): fit verdict, gap log,
+knockout facts, country profile, positioning source and locked keyword list.
 
-Present Phase 3 scoring gate.
+1. **Write** from the chosen base CV: headline mirroring the job title
+   (truthful), summary of 3 sentences and at most 60 words, bullets as outcome
+   + metric + method (a 4th clause only when it carries a locked keyword),
+   bullets ordered by relevance, 8–12 skills in the ad's exact wording (each
+   proven in a bullet), length and section order from the country profile.
+   Add a keyword only when the record proves it; otherwise it stays in the gap log.
+2. **Critique** against one rubric (REQ-38): each rule pass or fail with a
+   quote and a fix. Score = rules passed. Print the critique grade line.
+3. **Style pass** (Phase 5 rules, `references/skill-instructions/writing-quality.md`)
+   with the locked keywords protected: those terms never change (INT-03).
+
+Present the CV text and the critique, then **M4**. At M4, ask for
+`APPROVE CREATE` (A17). One approval per application covers every export and
+re-test for this job, unless the person chose to approve every export.
+
+---
+
+## Phase 3C — ATS Gate
+
+Rules and order: `references/ats-gate.md`. Countable checks:
+`python scripts/ats_gate.py --help`.
+
+1. **Export** DOCX (main) and text-based PDF from the same text, single column,
+   no tables, text boxes, images or header/footer text (A17).
+2. **Layout lint** — counts must be zero.
+3. **Read test** — 2 text readers as standard (1 minimum, flagged): every
+   critical field (name, contact, titles, companies, dates, headings) must
+   come out exactly right.
+4. **Visual review as ATS and recruiter** (GATE-18) — view each page as an
+   image; check reading order, overlaps, cut-off text; do the 6–10 second skim.
+   When tools allow, open the file in a CV-parsing preview read-only. Uploading
+   to any outside site is Tier 2 and needs approval; never use an employer's
+   live form for testing.
+5. **Locked-keyword integrity**, **coverage** (must-have ≥ 90%, each keyword at
+   most 4 times, about 3 normally), **evidence trace**, **knockout alignment**,
+   **content hygiene**, **platform profile** (2 MB max when unknown),
+   **country profile**, **skim test**.
+6. **Report** one verdict: PASS · PASS WITH WAIVERS (only Should-level checks)
+   · FAIL. Print the gate grade line, then the side-effects line. Save the
+   report with `ats_gate.py all [CONFIG] --out gate_report.json` in the
+   evidence pack (GATE-16).
+7. **Retries:** normal issues get 1 automatic retry; major issues up to 5,
+   decided by retry points (ats-gate.md, GATE-15). Stop and ask when a fix
+   needs new facts or two tries make no progress. Rerun from check 0.
+8. **Freeze** on PASS: run `scripts/ats_gate.py record-pass --job [JOB_ID]
+   --config [gate config with "job": "[JOB_ID]"]`. It re-runs every counted
+   check itself and saves the fingerprints only on PASS, so a report can't be
+   typed in by hand. The PASS belongs to that job and its keyword list: a
+   changed keyword list cancels it, and a CV passed for another job is refused. A PASS WITH WAIVERS is frozen only after the person accepts each
+   waiver, by adding `--waived`. Any later edit cancels the PASS (the optional
+   hooks in `hooks/` enforce this in Claude Code).
 
 ---
 
 ## Phase 4 — Application Package Production
 
-Print updated checklist with Phase 4 set to 🔄 Active.
-Confirm all Phase 3 critical gates cleared before writing anything.
+Confirm Phase 3 critical gates and an ATS Gate PASS before writing.
 
-Produce all deliverables in one response, clearly labelled for copy-paste.
+**Standard form fields** from the profile: `[CANDIDATE_NAME]`, `[EMAIL]`,
+`[PHONE]`, `[LINKEDIN_URL]`, `[SALARY_TARGET_GROSS]`, `[PORTFOLIO_URL]`. Flag
+any missing confirmed value.
 
-STANDARD FORM FIELDS:
-Pull from references/applicant-profile-template.md:
-[CANDIDATE_NAME], [EMAIL], [PHONE], [LINKEDIN_URL], [SALARY_TARGET_GROSS],
-[PORTFOLIO_URL]. Flag any missing confirmed value.
+**Experience summary:** derive from the CV summary (GAP-12): shorten, never
+add claims; keep locked keywords.
 
-EXPERIENCE SUMMARY (3–4 sentences):
-Select the appropriate Professional Summary version from the applicant
-profile based on the JD's primary requirement and [DETECTED_LEVEL].
-Tailor to this specific role. Do not restate the full CV.
-Route through Phase 5 before presenting.
+**Cover letter** — `references/cover-letter-templates.md`: addressed to the
+named hiring manager (fallback "Dear [HIRING_MANAGER_TITLE]:" or "Dear Hiring
+Team:"); why this role and company; 1–2 evidence examples with metrics; the
+person's product observation; one gap sentence plus compensating evidence for
+every Honest Stretch (from the gap log); a committed close with a dated
+follow-up ("I'll follow up on [date]"). Prohibited: "To Whom It May Concern",
+"I look forward to your reply", "I look forward to hearing from you". Word
+limits: email or online 250 · text box 450 · document 500. Tone by level:
+0–2 enthusiastic and specific; 3–4 direct and evidence-led; 5–7 strategic
+and outcome-at-scale.
 
-COVER LETTER — follow references/cover-letter-templates.md:
-Mix Template A and Template B elements per the mixing guide.
-
-  Address: to [HIRING_MANAGER_NAME] identified in Phase 1.
-    Fallback: "Dear [HIRING_MANAGER_TITLE]:" or "Dear Hiring Team:"
-    Never use: "To Whom It May Concern"
-
-  Opening paragraph: why this role, why this company, what makes the
-    candidate a fit — specific to the JD requirements.
-
-  Evidence paragraph: one or two examples. [COMPANY_A], [ROLE_AT_COMPANY_A],
-    [OUTCOME_A], [METRIC_A]. Action verbs. Explicit connection to JD.
-
-  Product observation: the user's specific observation from the Phase 3 trial.
-    Cannot be written before the trial answer is received.
-
-  Gap acknowledgment: one sentence naming the gap. One to two sentences
-    naming the compensating evidence. Required for Honest Stretch verdicts.
-
-  Strong close: commits to a follow-up action. Confirms relocation.
-    Prohibited: "I look forward to your reply", "please call me at your
-    earliest convenience."
-
-  Sign-off: [CANDIDATE_NAME] | [PHONE] | [EMAIL] | [LINKEDIN_URL]
-
-  Word limits: text box 450; online/email 250; document 500.
-
-Level-specific tone guidance:
-  Levels 0–2: enthusiastic, specific about learning pace and early wins.
-  Levels 3–4: direct, evidence-led, delivery-focused.
-  Levels 5–7: strategic, organisational, outcome-at-scale language.
-
-CUSTOM QUESTION ANSWERS:
-Print the exact question text above each answer.
-Every claim traces to the applicant profile or a Phase 3 answer.
-No fabricated metrics. No generic phrases.
-
-Route all written output through Phase 5 before presenting.
-
-Example field tokens in use (Alex M., fictional):
-  [CANDIDATE_NAME] = Alex M.
-  [COMPANY_A] = DataFlow GmbH
-  [ROLE_AT_COMPANY_A] = Senior Product Manager
-  [OUTCOME_A] = Reduced churn by 18% in 6 months through a
-    friction-audit-led onboarding redesign
-  [METRIC_A] = 18% churn reduction, 6-month timeline
-
-Present Phase 4 scoring gate.
+**Custom question answers:** print the exact question above each answer.
+Every claim traces to the profile or a Phase 3 answer.
 
 ---
 
-## Phase 5 — Writing Quality Pass (Inline Module)
+## Phase 5 — Writing Quality Pass
 
-Print updated checklist with Phase 5 set to 🔄 Active.
-Two passes run internally. Present only the final version — never the draft.
-
-PASS 1 — Remove all instances of the following 25 pattern categories:
-
-Family 1 — Significance inflation (10 patterns):
-  "stands as", "serves as", "is a testament to", "marks a pivotal moment",
-  "underscores", "highlights its importance", "reflects broader", "evolving
-  landscape", "indelible mark", "setting the stage for", "key turning point",
-  "shaping the future of", "deeply rooted", "contributing to the."
-
-Family 2 — Promotional language (8 patterns):
-  "boasts", "vibrant", "groundbreaking", "renowned", "breathtaking",
-  "nestled", "in the heart of", "showcasing", "exemplifies", "commitment
-  to excellence", "rich experience", "stunning", "dynamic" (used vaguely).
-
-Family 3 — Structural AI patterns (5 patterns):
-  Rule of three used for rhetorical effect rather than genuine enumeration.
-  Em dashes used more than once per paragraph for stylistic effect.
-  Negative parallelism: "not just X, but Y."
-  Synonym cycling: three different words for the same thing in sequence.
-  False ranges: "from X to Y, from A to B."
-
-Family 4 — Voice and attribution patterns (7 patterns):
-  Vague attributions: "experts argue", "industry reports suggest",
-    "observers have noted."
-  Copula avoidance: "serves as" or "functions as" instead of "is."
-  Superficial -ing phrases tacked onto sentence endings.
-  Chatbot artifacts: "Great question!", "I hope this helps!", "Let me know if."
-  Excessive hedging: "could potentially possibly", "might arguably be."
-  Knowledge cutoff hedging: "based on available information."
-  Overuse of "I" beginning consecutive sentences.
-
-Family 5 — Technical AI tells (5 patterns):
-  Hyphenated word pairs with perfect consistency: "cross-functional",
-    "data-driven", "end-to-end", "client-facing" used uniformly throughout.
-  Filler openers: "In order to", "It is important to note", "At its core."
-  Generic positive conclusions: "The future looks bright", "exciting times."
-  Over-formatted output: excessive bold, bullets, headers where prose fits.
-  Passive voice in evidence sections where active voice is stronger.
-
-PASS 2 — Internal audit loop:
-Ask internally: "What still makes this obviously AI-generated?" List remaining
-tells. Resolve each. Vary sentence length and rhythm. Add specificity where
-vague claims remain. Match the voice to the candidate's level and sector:
-direct and delivery-focused for mid-level; strategic and systems-oriented
-for senior and executive levels.
-
-Present Phase 5 scoring gate.
+Apply `references/skill-instructions/writing-quality.md` (25 pattern families,
+two internal passes) to the package. Present only the final version, never
+the draft. The locked keyword list is passed in and those terms are never
+changed (INT-03). Then **M5** (covers Phases 4 and 5).
 
 ---
 
-## Phase 6 — Governance Gate (Inline Module)
+## Phase 6 — Combined Final Verdict
 
-Print updated checklist with Phase 6 set to 🔄 Active.
-Fix all failures before presenting. Do not present with any open check.
+Detail: `references/skill-instructions/governance-gate.md` and INT-04.
+One report covering CV and application:
 
-Check 1: Can a third party complete this application without asking any
-  questions? Every required field has a value or an explicit flag.
-Check 2: Every factual claim traces to the applicant profile or a
-  Phase 3 answer. No unconfirmed metrics or tool names.
-Check 3: Salary is a single gross figure in the correct local currency.
-  Not a range in prose unless the form explicitly requires a range.
-Check 4: Any gap identified in Phase 2 is acknowledged in both the cover
-  letter and the "why suitable" answer. Not hidden. Not softened.
-Check 5: All placeholder tokens ([CANDIDATE_NAME], [COMPANY_A], etc.) are
-  replaced with real values or explicitly flagged for user completion.
-Check 6: Cover letter is within the word limit for its submission format.
-  (Text box: 450. Online/email: 250. Document: 500.)
-Check 7: Portfolio field is a valid URL, not placeholder text or description.
-Check 8: Salary field is a numeric value in currency format, not prose.
+1. The eight governance checks (third-party completable · claims trace ·
+   salary as one gross figure in local currency · gap acknowledged in the
+   letter and the "why suitable" answer · no placeholders · word limit ·
+   valid portfolio URL · numeric salary field).
+2. **Check 9:** the ATS Gate verdict is PASS or PASS WITH WAIVERS for this job.
+3. Public-profile consistency (titles, companies, dates match LinkedIn).
+4. Every gap-log entry has a handling decision.
 
-Present Phase 6 scoring gate.
+Claim tracing runs once (ATS Gate GATE-07) and is reused. Show the most
+important failure first. Print the verdict grade line. On FAIL, return to
+Phase 4 (or Phase 3B if the CV is the cause).
+
+**Fill and submit** (A04 / A05, Tier 3): only after a PASS and the exact
+phrase after a full preview. **Upload only the fingerprinted file(s) from the
+latest ATS Gate PASS for this job**: run `scripts/ats_gate.py verify-upload
+--job [JOB_ID] [FILE]`; stop on any mismatch (GAP-11). After upload, check
+the portal's preview of the parsed CV by eye (A18). DOCX is the main file; add
+the PDF when the portal accepts two files.
 
 ---
 
 ## Phase 7 — Post-Submission Loop
 
-Print updated checklist with Phase 7 set to 🔄 Active.
+**Branch A — submitted:** use the role as the anchor and return to Phase 0
+for the next 5 ranked roles.
+**Branch B — withdrawn:** log it, ask the reason, re-weight the next search.
+**Branch C — rejected:** log it, name the mandatory requirement it most likely
+reflects (from Phase 2 gaps), ask whether to adjust level, sector or emphasis.
 
-BRANCH A — Successful submission:
-  Use submitted role as anchor. Return to Phase 0. Present next 5 ranked
-  recommendations from a fresh filtered discovery pass.
+**In all branches:**
+1. Write the **application log** (GAP-13): job, level, track, CV fingerprint,
+   gate verdict, coverage, fit verdict, waivers, every score and note, date
+   sent, outcome. Same `APPROVE UPDATE` rule as the excluded-companies log.
+2. Set the **follow-up window** from the company research: 7 days (fast-moving
+   employers), 14 (most companies), 21 (large corporate, public sector,
+   government). 21 is the maximum; the person can shorten it.
+3. **Interview prep** (GAP-14) when an interview is booked: honest answers for
+   each gap, a 60–90 second story for each lead result, one-line answers for
+   knockout facts. A short prep sheet at submission only on request and approval.
+4. Append to `references/excluded-companies-log.md`; update salary anchors
+   when offer data arrives; run First-Use Step 5 (`APPROVE UPDATE`).
 
-BRANCH B — Candidate withdrawal before submission:
-  Log role as withdrawn. Ask: "What was the reason?" Use the answer to
-  refine the next discovery pass weighting (e.g. if too design-heavy,
-  downweight design-primary roles in the next pass).
-
-BRANCH C — Rejection after submission:
-  Log outcome. Identify which mandatory JD requirement the rejection most
-  likely reflects based on Phase 2 gaps. Ask the user whether to adjust
-  seniority target, sector, or emphasis for the next search cycle.
-
-Post-session updates required in all branches:
-  Append outcome to references/excluded-companies-log.md.
-  Update references/salary-anchors-template.md if offer data was received.
-
-Present Phase 7 scoring gate.
-
----
-
-## Platform Execution Notes
-
-Canonical reference: `docs/platform-capabilities.md`. **Execution modes:** `docs/EXECUTION_MODES.md`. **Scope law (what JAE may claim vs host features):** `docs/MANDATORY_EXCLUSIONS.md`. JAE does **not** fabricate undeclared automations or bypass invariants; host capabilities (e.g. CoWork, connectors) are used only under product limits, user consent, and — in Mode 2 — mandatory re-anchor to this skill’s phase governance.
-
-Claude.ai (web chat): Run all phases **sequentially** in one conversation.
-Wait for the scoring gate before advancing. Confirm explicitly before Phase 4.
-Present the status board each phase. **Agentic** here means in-conversation
-tools and MCPs per host policy — not CoWork-class workspace VM automation.
-
-Claude CoWork: Phases 0, 1, and Phase 3 salary research run as **parallel
-Tier-1 subagents** where `rules.json` permits. Phase 2 must return a verdict
-before Phase 4. Phases 5 and 6 run **sequentially**. Tier 2 and Tier 3
-automations run only on the **main coordination thread**. Package output as a
-downloadable file when the host supports it. Status board as a **static file
-artifact** updated per gate (see `references/skill-instructions/checklist-templates.md`).
-Parallelism is **authored in this skill**; CoWork **allows** it — the product
-does not auto-route phases without these rules.
-
-**hybrid_chat_review (DEFAULT):** Run Phases 0 and 1 in CoWork. Copy the Company
-Intelligence Brief into Claude.ai. Run Phases 2–7 in Claude.ai for sequential
-gates and in-chat review of drafting.
-
-**cowork_end_to_end (SECONDARY):** Run Phases 0–7 entirely in CoWork when
-workspace files, downloadable packages, or staying in one agent workspace
-dominate the session goals.
-
-Manus — **primary:** Skills tab → **+ Add** → **Upload a skill** (`.zip` /
-`.skill`) or **Import from GitHub** with the public repository URL.
-**Fallback:** upload extracted workspace files; or paste `rules.json` as
-session-scope instructions. Maintain the status board as a **text block** in
-session context. All phase outputs require user confirmation before advancing.
-If `present_files` is INACTIVE, use **A0 STEP 2A — Mandatory artifact fallback**
-immediately for any local download step.
+Print the Phase 7 grade line. Its grade also shows at the start of the
+person's next application.
 
 ---
 
-## Automation Layer — v2.0 Addition (v2.1.x: A14–A16 for execution modes)
+## Worked Example — Mode B (fictional candidate, Alex M.)
 
-This section is purely additive to the baseline eight-phase workflow shipped in
-the Generic Universal edition. All 8 phases and their gates remain unchanged.
-The automation layer adds a capability detection
-protocol at session start, inline automation recommendations at relevant
-phase steps, consent gates before any real-world action fires, and execution
-routing per platform. Read automation-registry.json for the full declared
-scope of permitted automations (including **A14–A16** for `cowork_autonomous`
-chunk orchestration, governance re-anchor, and drift check — `docs/EXECUTION_MODES.md`).
+**Input:** Alex uploads `AlexM_CV.pdf` and pastes `https://jobs.lever.co/acme/123` with "apply for this".
 
----
-
-### A0 — Capability Detection Protocol
-
-Run this protocol at the very start of every session, before Phase 0 begins.
-Do not proceed to Phase 0 until the Capability Map is presented and the user
-has acknowledged it.
-
-STEP 1 — Probe available tools and MCP connections:
-Check which of the following are active in the current session environment:
-  web_search, web_fetch, bash_tool, create_file, present_files (native tools)
-  BrowserBase MCP (browser automation — primary path for form filling)
-  Playwright MCP (browser automation — secondary path)
-  Gmail MCP (email send and draft)
-  Outlook / MS365 MCP (email alternative)
-  Google Drive MCP (cloud document storage)
-  OneDrive MCP (cloud document storage alternative)
-  Google Calendar MCP (reminder creation)
-  Any other MCP detected in the session environment
-
-STEP 1B — Job Board and ATS Platform MCP Detection:
-This step runs as part of STEP 1. Probe specifically for the following
-job board and ATS platform MCPs, which enable direct authenticated access
-to platform dashboards, saved job lists, and application status tracking
-beyond what web_fetch alone can achieve:
-
-  LinkedIn MCP        — authenticated job search, saved jobs, easy apply
-  Indeed MCP          — job search, application tracking
-  Greenhouse MCP      — ATS access for candidates and recruiters
-  Lever MCP           — ATS job board access
-  Workday MCP         — enterprise ATS access
-  Ashby MCP           — modern ATS integration
-  Wellfound MCP       — startup job board access
-  SmartRecruiters MCP — enterprise ATS integration
-  Breezy HR MCP       — job board and ATS access
-  Recruitee MCP       — ATS integration
-
-For each: check if the MCP is active in the current session. Mark as
-ACTIVE, LIMITED, or INACTIVE in the map.
-
-If ALL job board and ATS MCPs are INACTIVE — run STEP 1C immediately.
-
-STEP 1C — MCP Discovery Search (runs only when no job board MCP is found):
-Run the following web searches to find currently available job board and
-ATS platform MCPs that the user could connect:
-
-  web_search: "LinkedIn MCP model context protocol job search site:github.com"
-  web_search: "job board ATS MCP Claude integration available 2025 site:github.com OR site:npmjs.com"
-  web_search: "Greenhouse Lever Workday MCP server integration Claude"
-
-From the results, compile a list of:
-  - MCPs that exist and are publicly available (GitHub repo, npm package, or official)
-  - MCPs that are in development or planned
-  - Native API integrations that approximate MCP capability
-
-Present this as a RECOMMENDED CONNECTIONS block below the Capability Map.
-Always note that without a job board MCP, the skill falls back to
-web_search and web_fetch for discovery and manual paste for authenticated
-actions. That fallback is fully functional — job board MCPs are an
-enhancement, not a requirement.
-
-STEP 2 — Build and present the Capability Map:
-Print the map using this exact format. Replace [STATUS] with one of:
-  ✅ ACTIVE — tool confirmed available and callable
-  ⚠ LIMITED — tool present but with known constraints (note the constraint)
-  ❌ INACTIVE — tool not connected (show what connection would enable it)
-
-```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                    JAE — AUTOMATION CAPABILITY MAP                          ║
-╠════════════════════════════════════╦══════════════════╦══════════╦══════════╣
-║  AUTOMATION                        ║ TOOL / MCP       ║ STATUS   ║ FALLBACK ║
-╠════════════════════════════════════╬══════════════════╬══════════╬══════════╣
-║  CORE TOOLS                        ║                  ║          ║          ║
-║  Job board search & fetch          ║ web_search/fetch ║ [STATUS] ║ —        ║
-║  Form fetch & parse                ║ web_fetch        ║ [STATUS] ║ Manual   ║
-║  Browser form filling              ║ BrowserBase MCP  ║ [STATUS] ║ Playwright║
-║  Application submission            ║ BrowserBase MCP  ║ [STATUS] ║ Manual   ║
-║  Document creation (DOCX/PDF)      ║ bash_tool        ║ [STATUS] ║ —        ║
-║  File download (local)             ║ present_files    ║ [STATUS] ║ —        ║
-║  Cloud save (Drive/OneDrive)       ║ Google Drive/OneDrive   ║ [STATUS] ║ Ask user ║
-║  Email draft & send                ║ Gmail/Outlook    ║ [STATUS] ║ Manual   ║
-║  Calendar reminders                ║ Calendar MCP     ║ [STATUS] ║ Manual   ║
-╠════════════════════════════════════╬══════════════════╬══════════╬══════════╣
-║  JOB BOARD & ATS PLATFORM MCPs     ║                  ║          ║          ║
-║  LinkedIn (search, saved, apply)   ║ LinkedIn MCP     ║ [STATUS] ║ web_fetch ║
-║  Indeed (search, tracking)         ║ Indeed MCP       ║ [STATUS] ║ web_fetch ║
-║  Greenhouse (ATS)                  ║ Greenhouse MCP   ║ [STATUS] ║ web_fetch ║
-║  Lever (ATS)                       ║ Lever MCP        ║ [STATUS] ║ web_fetch ║
-║  Workday (enterprise ATS)          ║ Workday MCP      ║ [STATUS] ║ web_fetch ║
-║  Ashby (modern ATS)                ║ Ashby MCP        ║ [STATUS] ║ web_fetch ║
-║  Wellfound / AngelList             ║ Wellfound MCP    ║ [STATUS] ║ web_fetch ║
-║  SmartRecruiters                   ║ SmartRec MCP     ║ [STATUS] ║ web_fetch ║
-╚════════════════════════════════════╩══════════════════╩══════════╩══════════╝
-
-INACTIVE AUTOMATIONS — what would enable them:
-  [List each ❌ item with the MCP name and connection instructions]
-
-RECOMMENDED JOB BOARD MCPs (shown only when all job board MCPs are INACTIVE):
-  [Results from STEP 1C web search — available MCPs with GitHub/npm links]
-  [Note: web_search and web_fetch provide full discovery capability without
-   these MCPs. They unlock authenticated features like saved jobs, easy
-   apply, and application status tracking.]
-```
-
-STEP 2A — Mandatory artifact fallback (present_files, create_file, bash_tool):
-If **present_files**, **create_file**, or **bash_tool** is ❌ INACTIVE or ⚠ LIMITED such that local file presentation or shell-backed generation cannot run as written:
-  1. State which tool is blocked and why (from the Capability Map row).
-  2. Deliver the **full artifact content inline** (structured or monospace) — cover letter text, package summary, DOCX instructions, etc. Never claim `present_files` ran when the map shows INACTIVE.
-  3. Instruct the user to **save or copy** to their machine or workspace using the host UI (copy button, workspace file create, manual paste) — exact control depends on Claude.ai, CoWork, or Manus.
-  4. On **Manus**, treat **present_files** as potentially INACTIVE unless the map shows ACTIVE; use this fallback **without** waiting for failure at send time.
-  5. Read **artifact_policy** in `automation-registry.json` and **docs/MANDATORY_EXCLUSIONS.md** (Manus §) for normative scope.
-
-STEP 3 — Browser automation disclosure:
-If BrowserBase MCP is ACTIVE: note it as the primary path for form filling
-and submission. No further explanation needed unless the user asks.
-
-If BrowserBase is INACTIVE but Playwright MCP is ACTIVE: present this
-disclosure to the user before Phase 0:
-
-  "Playwright MCP is available for browser automation (form filling and
-  application submission). This is a technical tool — it controls a real
-  browser programmatically. It works reliably on most job platforms but
-  requires that the target site does not use aggressive bot detection.
-  If a site blocks it, the fallback is pre-staged answers for manual paste.
-  Do you want to use Playwright automation where available?"
-
-If both are INACTIVE: note that form filling and submission will use
-pre-staged answers for manual paste. No further action needed.
-
-STEP 4 — Acknowledge and proceed:
-After presenting the Capability Map, ask: "Shall we begin?"
-Do not proceed until the user confirms.
+1. Execution mode recorded; A0 Capability Map shown, including CV export, text readers and visual-review tools.
+2. Profile exists: staleness check flags availability. CV compared with the profile; differences offered via `APPROVE UPDATE`. The intake form asks only the 3 missing fields.
+3. Entry gate detects Mode B; Phase 0 `✅ Skipped`.
+4. Phase 1 brief → M1 5/5. Step 2A grade line: "11 must-have terms, 3 not in the base CV" → fit verdict Honest Stretch → M2 5/5.
+5. Phase 3 confirms pre-filled facts, picks the Germany profile and the Product Delivery track → M3 5/5.
+6. Phase 3B writes the CV, critique 18/19 rules fixed to 19/19 → M4 5/5 and `APPROVE CREATE`.
+7. Phase 3C: "ATS Gate: 5/5 · all checks passed · must-have coverage 92% (was 64%). Not stopping." Files frozen.
+8. Phases 4–5 → M5 5/5. Phase 6 combined verdict PASS. `APPROVE FILL` then `APPROVE SUBMIT` upload the frozen DOCX. Phase 7 logs everything; follow-up window 14 days.
 
 ---
 
-### Automation Recommendation Protocol
+## Scope — what this skill does not do
 
-At each phase where an automation is relevant, present a recommendation
-block AFTER the phase's main output and BEFORE the scoring gate.
-
-Use this format:
-
-```
-── AUTOMATION AVAILABLE ────────────────────────────────────────────
-  ACTION    : [What the automation will do]
-  TOOL      : [Which tool or MCP will execute it]
-  CONSENT   : [Tier 1 auto / Tier 2 APPROVE / Tier 3 APPROVE + phrase]
-  RELEVANCE : [Why this is useful at this exact step]
-  → Type APPROVE [ACTION] to execute, or skip to continue manually.
-────────────────────────────────────────────────────────────────────
-```
-
-Additionally, if the Capability Map shows an INACTIVE automation that would
-be highly useful at the current step, present a recommendation to connect it:
-
-```
-── AUTOMATION RECOMMENDED (NOT YET CONNECTED) ──────────────────────
-  MISSING   : [Automation name]
-  WOULD DO  : [What it would do at this step]
-  REQUIRES  : [MCP name and how to connect]
-  BENEFIT   : [Why connecting it would improve this step]
-────────────────────────────────────────────────────────────────────
-```
-
-Never present more than two automation recommendations per phase.
-Always present the manual fallback path alongside any automation option.
-Never suggest automations outside the scope declared in automation-registry.json.
-
-Phase-by-phase automation trigger points:
-
-Phase 0 (Job Discovery): after presenting the ranked table, offer to fetch
-  full job posting content for top 5 results (Tier 1 auto via web_fetch).
-  If BrowserBase or Playwright is active, offer to access job board dashboards
-  that require login after user provides credentials within the session.
-
-Phase 1 (Company Intelligence): after the Intelligence Brief, offer to
-  fetch and map the full application form for the selected role (Tier 1).
-  If form requires browser access and automation is available, trigger it.
-
-Phase 3 (Clarifying Intake): if a follow-up email to the hiring manager
-  would be appropriate (e.g. to ask for the application form name), offer
-  to draft and send it via email automation (Tier 3 — requires APPROVAL).
-
-Phase 4 (Application Package): after package is produced and scored 5,
-  offer to create a DOCX version of the cover letter (Tier 2 — APPROVE CREATE).
-  Offer to save the full package to local download immediately (Tier 1).
-
-Phase 6 (Governance Gate): after all 8 checks pass, offer to fill the
-  application form fields using browser automation if available (Tier 3).
-  Offer to create a session record document for local download (Tier 2).
-
-Phase 7 (Post-Submission): offer to create a calendar reminder for
-  follow-up (Tier 2 — APPROVE CREATE). Offer to send a confirmation email
-  to the user's own address with the application package (Tier 2).
-
----
-
-### Consent Gate Protocol
-
-Three tiers based on reversibility and risk. Approval and Scoring are
-separate systems. Scoring gates evaluate phase quality. Consent gates
-authorise real-world actions. They use different confirmation mechanisms
-and must never be conflated.
-
-TIER 1 — Read-only actions:
-Examples: fetching job listings, loading forms, researching companies.
-Execution: auto-execute as part of the phase workflow. No separate gate.
-The existing phase scoring gate is sufficient.
-
-TIER 2 — Reversible write actions:
-Examples: creating a DOCX, saving to Drive, creating a calendar event.
-Present a preview before executing:
-
-```
-── TIER 2 CONSENT GATE ────────────────────────────────────────────
-  ACTION    : [Exact description of what will be created or written]
-  LOCATION  : [Where it will be saved — local / Drive folder / calendar]
-  CONTENTS  : [Summary of what the file or event will contain]
-  REVERSIBLE: Yes — [explain how to undo if needed]
-  → Type APPROVE [ACTION_NAME] to execute.
-  → Example: APPROVE CREATE to create the document.
-  → Type SKIP to continue without this action.
-────────────────────────────────────────────────────────────────────
-```
-
-Accept only exact APPROVE [ACTION_NAME] typed by the user. A score of 5,
-"yes", "ok", or any other response does not constitute Tier 2 approval.
-
-TIER 3 — Irreversible write actions:
-Examples: submitting an application, sending an email to an external party.
-These cannot be undone. Use the full consent gate:
-
-```
-── TIER 3 CONSENT GATE — IRREVERSIBLE ACTION ──────────────────────
-  ACTION     : [Exact description — what will be sent or submitted]
-  DESTINATION: [Exact recipient or platform receiving the action]
-  DATA SENT  : [Full list of data fields or content being transmitted]
-  TIMESTAMP  : [Current date and time of execution if confirmed]
-  ⚠ THIS CANNOT BE UNDONE AFTER CONFIRMATION.
-
-  To confirm, type the exact phrase:
-  APPROVE [SPECIFIC_PHRASE]
-
-  Examples:
-    Application submission → APPROVE SUBMIT
-    Email send             → APPROVE SEND
-    Form field commit      → APPROVE FILL
-
-  Type CANCEL or anything else to abort.
-────────────────────────────────────────────────────────────────────
-```
-
-After receiving APPROVE [SPECIFIC_PHRASE]: read it back to confirm the
-match is exact. Then execute. Never execute on a partial match.
-Never proceed if the user types a score, "yes", or a paraphrase.
-
----
-
-### Browser Automation Protocol
-
-STEP 1 — Platform detection:
-Before triggering browser automation for a specific job platform, check
-automation-registry.json for the platform's known bot-detection level.
-High bot-detection platforms (LinkedIn, Indeed) require special handling.
-Low bot-detection platforms (Greenhouse, Lever, Breezy HR) are reliable.
-
-STEP 2 — Tool selection:
-If BrowserBase MCP is ACTIVE: use it as the primary execution path.
-If BrowserBase is INACTIVE and Playwright MCP is ACTIVE: present the
-Playwright disclosure (see A0 Step 3) if not already shown this session,
-confirm the user accepts Playwright, then proceed.
-If both are INACTIVE: switch to pre-staged answers mode — produce all
-field values in a numbered copy-paste format matching the form structure,
-and instruct the user to fill manually.
-
-STEP 3 — Credential handling:
-Never store credentials in any file. If a platform requires login for
-form access, request credentials within the session only, use them for
-the current action, and explicitly confirm to the user that they are
-not retained after the session ends.
-
-STEP 4 — Failure handling:
-If browser automation fails mid-form (bot detection, timeout, DOM change):
-immediately stop, report the failure to the user, show how far the form
-was completed, and switch to pre-staged answers for the remaining fields.
-Never attempt to resubmit automatically after a failure.
-
----
-
-### Email Selection Protocol
-
-Never assume which email system to use. Never hardcode a default.
-
-When an email action is triggered for the first time in a session:
-Present all active email MCPs detected in the Capability Map.
-Ask the user which to use for this action.
-Store the selection for this session only as [SESSION_EMAIL_CHOICE].
-On subsequent email actions in the same session: show "Last used:
-[SESSION_EMAIL_CHOICE]" and ask "Use the same, or switch?"
-Do not carry the selection across sessions. Ask fresh each time.
-
-Format for email selection prompt:
-
-```
-── EMAIL SYSTEM SELECTION ─────────────────────────────────────────
-  Available email systems detected this session:
-    [List each active email MCP]
-  Last used this session: [SESSION_EMAIL_CHOICE or "None yet"]
-  Which would you like to use for this action?
-────────────────────────────────────────────────────────────────────
-```
-
----
-
-### Document Storage Protocol
-
-When a document (DOCX, PDF, or package) is created:
-
-STEP 1 — Always present for local download first using present_files.
-Never ask about cloud storage before local download is presented.
-
-STEP 2 — After local download is offered, ask:
-"Would you also like to save this to cloud storage?"
-If yes: present all active cloud storage MCPs detected in the Capability Map
-  (Google Drive, OneDrive, or any other connected provider).
-Ask which provider to use for this save.
-Execute the cloud save as a Tier 2 action (APPROVE SAVE required).
-If no: proceed without cloud save. Never save to cloud without consent.
-
-STEP 3 — Folder suggestion:
-When saving to cloud, suggest a logical folder path based on the current
-session context (e.g. "Job Applications / [COMPANY_NAME] / [DATE]").
-Present the suggested path and ask the user to confirm or modify it before
-executing the save.
-
----
-
-### Platform-Aware Automation Routing
-
-Claude.ai:
-All automations execute sequentially. Tier 1 actions fire inline as part
-of the phase. Tier 2 and Tier 3 actions pause for consent before firing.
-Browser automation and email MCPs execute in the same conversation thread.
-
-Claude CoWork:
-Tier 1 read-only automations (job board fetching, form parsing, company
-research) may run as parallel subagents during Phases 0 and 1.
-All Tier 2 and Tier 3 actions — regardless of phase — execute sequentially
-after consent in the main coordination thread. Never dispatch an irreversible
-action to a subagent.
-
-Manus:
-All automations follow the `rules.json` `automation_layer` block as session
-instructions (whether loaded via Skills, workspace files, or pasted rules).
-Tier 1 actions execute inline. Tier 2 and Tier 3 actions pause and surface
-the consent gate as a text prompt in the session. Browser automation relies on
-Manus's native browser tools if BrowserBase and Playwright MCPs are not
-available. For `present_files` INACTIVE, apply **A0 STEP 2A** before claiming
-any file download occurred.
+- Does not submit, fill, email, create or save anything without the required approval phrase.
+- Does not invent metrics, tools, titles, companies or keywords the record can't prove.
+- Does not install or connect MCPs — it detects and recommends them.
+- Does not give legal, immigration or tax advice; visa and salary notes are inputs for the person's own decision.
+- Does not apply in bulk or to hard-excluded geographies.
+- Does not store credentials or government ID numbers.
+- Does not upload a CV to any outside site for testing without approval, and never tests through an employer's live application form.
 
 ---
 
 ## Invariants — Structural Rules (All Candidates)
 
-Never produce application text before all Phase 3 critical gates cleared.
-Never fabricate metrics, company details, or tool names not in the profile.
-Never suggest a salary without running market research first.
-Never apply to or recommend companies in hard-excluded geographies.
-Never present a Writing Quality draft — only the final version.
-Never hide or soften a Mismatch verdict.
-Never use "To Whom It May Concern" in any cover letter.
-Never use passive cover letter closes.
-Always address the cover letter to a named person where one can be found.
-Always update the excluded-companies-log after every discovery run.
-Always update salary anchors after any offer data is received.
-Always run the Level Classification framework before Phase 3 salary research.
+Unchanged from v2.1.1:
+
+1. Never produce application text before all Phase 3 critical gates cleared. In v2.2.0 this includes the CV.
+2. Never fabricate metrics, company details, or tool names not in the profile.
+3. Never suggest a salary without running market research first.
+4. Never apply to or recommend companies in hard-excluded geographies.
+5. Never present a Writing Quality draft — only the final version.
+6. Never hide or soften a Mismatch verdict.
+7. Never use "To Whom It May Concern" in any cover letter.
+8. Never use passive cover letter closes.
+9. Always address the cover letter to a named person where one can be found.
+10. Always update the excluded-companies-log after every discovery run.
+11. Always update salary anchors after any offer data is received.
+12. Always run the Level Classification framework before Phase 3 salary research.
+
+Added in v2.2.0:
+
+13. Never add a keyword to a CV unless the record proves it; otherwise log it as a gap.
+14. Never change a locked keyword in any rewriting, translation or export step.
+15. Never upload or attach a CV file that is not the fingerprinted file from the latest ATS Gate PASS for that job.
+16. Never print a Private field (salary, permit status, sponsorship need, notes) on a CV, and never collect government ID numbers.
+17. Never let a score authorise an action; scores and approval phrases stay separate.
+18. Always show a grade with its reason for every phase that does not stop the person.
+19. Never stop on a missing or blocked tool before trying the fallback ladder (A18), and never lower a consent tier when falling back.

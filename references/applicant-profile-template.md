@@ -495,3 +495,29 @@ Annually or on event:
 On offer received or declined:
   [SALARY_ARCHITECTURE] for that market (ground-truth calibration)
   excluded-companies-log.md (append outcome)
+
+---
+
+## SECTION 8 — v2.2.0 ADDITIONS (filled by the intake questionnaire)
+
+Field IDs refer to `references/intake-questionnaire.md`. Privacy: CV = may be
+printed · Private = never printed · Ask = printed only if the country profile
+expects it and the person agrees.
+
+| Field | Source | Privacy | Expires |
+|---|---|---|---|
+| [SITUATION_PATH] first job / career change / returning / experienced / executive | Q0.1 | Private | — |
+| [TRACKS] one per filled Section 1: titles, industry, country, level, sample ads, base keyword list, base CV | Q1.1–Q1.6 | Private | — |
+| [WORK_AUTHORIZATION] per target country | Q3.1 | Private | 6 months |
+| [SPONSORSHIP_NEEDED] | Q3.2 | Private | 6 months |
+| [ACTIVE_COMMITMENTS] | Q3.4 | Private | 2 weeks |
+| [EVIDENCE] results with evidence IDs E-[entry]-[n] and optional proof | Q6.10–Q6.11 | CV (proof: Private) | — |
+| [ENGAGEMENT_TYPE] per role | Q6.5 | CV | — |
+| [TITLE_CHANGES] within one organisation | Q6.8 | CV | — |
+| [EXECUTIVE_SCALE] budget, team, revenue, markets, board exposure | Q6.13 | CV | — |
+| [CERTIFICATIONS] with expiry and verification link | Q9.1–Q9.5 | CV (link: Private) | At expiry |
+| [LANGUAGE_PROFICIENCY] converted to A1–C2 / Native | Q10.1 | CV | — |
+| [CV_PREFERENCES] photo, personal details, length, file type, employer instructions, references | Q12.1–Q12.6 | Ask / Private | — |
+| [HONESTY_CONFIRMATION] | Q13.1 | Private | — |
+
+Government ID numbers are never stored.

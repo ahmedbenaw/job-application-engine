@@ -42,3 +42,10 @@ Thumbs.db
 
 # Personal exclusion lists (may contain sensitive geography or company data)
 references/excluded-companies-personal.md
+
+# ATS Gate PASS state (v2.2.0; per-user runtime data, never commit)
+jae-state/
+
+# Python bytecode
+__pycache__/
+*.pyc

@@ -198,3 +198,12 @@ Rule 9: Sign-off must include phone number and email address.
 Rule 10: The product observation paragraph must be present when the user
 completed a product trial in Phase 3. It must be original — not a
 paraphrase of the company's own marketing language.
+
+---
+
+## v2.2.0 notes
+
+- Take gap sentences from the gap log (REQ-39): one sentence naming the gap, one to two naming the compensating evidence.
+- The opening and any summary lines are derived from the CV summary (GAP-12); never add claims the CV doesn't make.
+- Close with a committed, dated follow-up ("I'll follow up on [date]"). Never "I look forward to hearing from you" or "I look forward to your reply".
+- Locked keywords keep their exact wording (INT-03).

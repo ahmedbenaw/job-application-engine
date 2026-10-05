@@ -1,0 +1,1 @@
+[{"term": "product discovery", "must": true, "weight": 3}, {"term": "SQL", "must": true, "weight": 2}, {"term": "A/B testing", "must": true, "weight": 2}, {"term": "roadmap", "must": false, "weight": 1}, {"term": "Kubernetes", "must": true, "weight": 1}]

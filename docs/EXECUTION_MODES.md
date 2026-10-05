@@ -1,6 +1,6 @@
-# Execution modes — JAE v2.1.x
+# Execution modes — JAE v2.1.x and later (current: v2.2.0)
 
-This document is **normative** for how the skill may combine **governance** (eight phases, scoring gates, consent tiers) with **host execution** (Claude / CoWork / Manus) without drifting.
+This document is **normative** for how the skill may combine **governance** (eight phases with sub-phases 2A/3B/3C, scoring gates, consent tiers) with **host execution** (Claude / CoWork / Manus) without drifting.
 
 **Machine-readable:** [rules.json](../rules.json) → `execution_modes`.  
 **Skill behavior:** [SKILL.md](../SKILL.md) — *Execution mode gate* and *Mode 2 re-anchor*.
@@ -20,7 +20,7 @@ This document is **normative** for how the skill may combine **governance** (eig
 
 ## 2) Mode 1 — `agent_supported` (default)
 
-- Full **A0 → Phase 0–7** path with **scoring gate** every phase and **Tier 2/3** consent exactly as in `automation-registry.json`.
+- Full **A0 → Phase 0–7** path (including 2A, 3B, 3C) with the **v2.2.0 scoring model** — mandatory 5/5 gates M1–M5, a visible grade for every other phase, and escalation to a blocking gate at 3 or lower — and **Tier 2/3** consent exactly as in `automation-registry.json`.
 - **CoWork:** parallel Tier-1 work only where `rules.json` and `SKILL.md` allow; irreversible work on the main thread.
 - **Claude.ai / Manus:** sequential governance as already documented in [platform-capabilities.md](platform-capabilities.md).
 
@@ -32,7 +32,7 @@ This document is **normative** for how the skill may combine **governance** (eig
 
 **Non-negotiable (anti-drift):**
 
-- **Governance is always the agent-supported phase model** — the eight phases, invariants, and registry scope remain the source of truth.
+- **Governance is always the agent-supported phase model** — the eight phases and sub-phases, the 19 invariants, and registry scope remain the source of truth.
 - The skill **does not** “skip to submission” or collapse phases. Any fast host execution must be **chunked** and followed by a **re-anchor** step (A15/A16) that verifies alignment with the current phase and checklist.
 - **Irreversible actions** (submit, send, fill, etc.): **default** remains **unchanged** — same Tier 3/2 requirements unless a future, explicit, versioned policy says otherwise.
 - If the user’s request, tool output, or host behavior conflicts with phase scope, **stop**, return to a normal agent-supported checkpoint, and reconcile.
@@ -56,7 +56,7 @@ For each **autonomous chunk** (see A14 in `automation-registry.json`):
 
 1. **Pre-chunk:** State current phase, objective, and allowed tools/scope for *this* chunk.
 2. **Run chunk** (host execution as permitted, with A14 consent if required by tier).
-3. **Post-chunk re-anchor (A15):** Confirm phase status, checklist row, invariants, and that no phase boundary was crossed without a completed gate.
+3. **Post-chunk re-anchor (A15):** Confirm phase status, checklist row, invariants, and that no phase boundary was crossed without a completed gate. If the chunk touched a CV file, confirm the ATS Gate PASS is still valid (`scripts/ats_gate.py check-stale`); an edited file cancels the PASS.
 4. **Drift check (A16):** If ambiguity, tool conflict, or scope creep — pause and return to full agent-supported presentation for that step.
 
 ---
@@ -65,6 +65,7 @@ For each **autonomous chunk** (see A14 in `automation-registry.json`):
 
 - Not permission to add undeclared automations or “ghost” Axx.
 - Not permission to run Tier 2/3 on subagents.
+- Not permission to lower a consent tier when a step falls back to browser use, computer use or vision (A18, invariant 19).
 - Not a guarantee that every host feature (e.g. computer use, scheduling UI) is available on the user’s plan or region — see [platform-capabilities.md](platform-capabilities.md) and the vendor’s pages.
 
 ---

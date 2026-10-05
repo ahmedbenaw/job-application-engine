@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": ".*([Uu]pload|file_upload|[Bb]ash).*",
+        "hooks": [{ "type": "command", "command": "python3 /ABSOLUTE/PATH/TO/job-application-engine/hooks/scripts/pre_upload_guard.py", "timeout": 20 }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash|NotebookEdit",
+        "hooks": [{ "type": "command", "command": "python3 /ABSOLUTE/PATH/TO/job-application-engine/hooks/scripts/post_change_stale.py", "timeout": 20 }]
+      }
+    ]
+  }
+}

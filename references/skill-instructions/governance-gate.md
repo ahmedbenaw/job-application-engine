@@ -84,3 +84,19 @@ Check 7: ✅ Portfolio: https://github.com/alex-m-example
 Check 8: ✅ Salary field: 92000
 
 All 8 checks passed. Package ready to present.
+
+---
+
+## v2.2.0 — Combined final verdict (INT-04)
+
+Phase 6 now produces one report covering the CV and the application:
+
+- Checks 1–8 as above.
+- **Check 9:** the ATS Gate verdict for this job is PASS or PASS WITH WAIVERS (`references/ats-gate.md`).
+- Public-profile consistency: titles, companies and dates match the person's LinkedIn (GAP-10).
+- Every gap-log entry has a handling decision (REQ-39).
+
+Claim tracing (Check 2) reuses the ATS Gate evidence trace (GATE-07) instead
+of running twice. Show the most important failure first. Phase 6 is a
+complementary phase: it prints a grade line and blocks on any failed Must
+check. A04 / A05 may run only after a combined PASS.

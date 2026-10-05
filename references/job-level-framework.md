@@ -131,3 +131,106 @@ Your acceptable range: ___ to ___
 
 If you are unsure, describe the scope and team size of roles you are
 targeting and I will assign a level."
+
+---
+
+## v2.2.0 — CV wording by level (GAP-09)
+
+Apply the detected level to the CV summary and the top 3 bullets of the most recent role:
+
+| Levels | CV language |
+|---|---|
+| 0–2 | Learning speed, hands-on delivery, early wins |
+| 3–4 | Ownership, delivery, cross-team influence |
+| 5–7 | Strategy, organisation building, outcomes at scale (revenue, markets, headcount, budgets) |
+
+---
+
+## Inline module text from SKILL.md v2.1.1 (moved here unchanged)
+
+### Job Level Classification Framework (inline module)
+
+This framework is used in Phase 0 (discovery filtering), Phase 2 (fit
+analysis — role level detection), Phase 3 (salary research anchoring),
+and Phase 4 (positioning headline and summary selection).
+
+Auto-detection: read the JD title, scope, reporting line, and team size
+to assign a level. Do not rely on the title alone — a startup "Head of"
+may carry Level 4 scope; an enterprise "Senior Manager" may carry Level 6
+scope. Read the responsibilities to confirm.
+
+Self-identification: if the user has not stated a target level, ask them
+to identify their primary target and acceptable range before Phase 0 runs.
+
+```
+LEVEL 0 — NOVICE
+  Titles:    Intern
+  Scope:     Learning under supervision, no independent ownership
+  Salary:    Stipend or entry-level band; varies widely by market
+
+LEVEL 1 — ENTRY
+  Titles:    Junior [Role], Associate [Role], Graduate [Role]
+  Scope:     Defined tasks with guidance; limited independent decision-making
+  Salary:    Market entry band; 0–3 years experience typical
+
+LEVEL 2 — MID
+  Titles:    [Role] (no qualifier), Associate [Role] with full responsibility
+  Scope:     Independent execution on defined scope; some cross-functional work
+  Salary:    Mid-market band; 3–6 years experience typical
+
+LEVEL 3 — SENIOR
+  Titles:    Senior [Role], Team Lead [Role], Staff [Role]
+  Scope:     Independent ownership of a product area or function; mentors
+             junior team members; influences roadmap or direction
+  Salary:    Upper-market band; 6–10 years experience typical
+
+LEVEL 4 — MANAGER
+  Titles:    Manager, Principal, Group [Role]
+  Scope:     Manages a team or significant product area; owns budget or
+             headcount; accountable for team output
+  Salary:    Management band; 8–12 years experience typical
+
+LEVEL 5 — DIRECTOR
+  Titles:    Director, Senior Director
+  Scope:     Owns a department or major product line; sets strategy within
+             a business unit; reports to VP or C-Suite
+  Salary:    Director band; 12–18 years experience typical
+
+LEVEL 6 — HEAD / VP
+  Titles:    Head of [Function], VP of [Function], VP
+  Scope:     Owns an entire function across the organisation; sets strategy;
+             hires and structures the team; board-level visibility
+  Salary:    VP band; 15+ years experience typical
+
+LEVEL 7 — EXECUTIVE
+  Titles:    C-Suite (CPO, CTO, CEO, CFO, COO), Managing Director, President
+  Scope:     Full organisational or company-wide accountability; owns P&L or
+             equivalent; reports to board or investors
+  Salary:    Executive band; equity is a significant component at this level
+```
+
+Startup title calibration rule: at companies under 50 people, subtract one
+level from the title to estimate true scope. A "Head of Product" at a 15-
+person startup is typically Level 4–5 scope. At a 500-person company, the
+same title is Level 6 scope.
+
+Level-to-strategy mapping:
+
+  Levels 0–2: Cover letter leads with potential and learning velocity.
+    Evidence emphasises growth, adaptability, and early impact.
+    Salary: use the floor-to-midpoint of the market band.
+
+  Levels 3–4: Cover letter leads with delivery track record.
+    Evidence emphasises owned outcomes, team collaboration, metrics.
+    Salary: use the midpoint-to-75th percentile of the market band.
+
+  Levels 5–6: Cover letter leads with strategic impact and organisational
+    influence. Evidence emphasises direction-setting, stakeholder management,
+    business outcomes, and team-building at scale.
+    Salary: use the 75th percentile to stretch of the market band.
+
+  Level 7: Cover letter leads with vision, governance, and systemic impact.
+    Evidence emphasises P&L ownership, board relationships, market positioning.
+    Salary: custom negotiation; benchmark against public comp data and equity.
+
+---

@@ -5,6 +5,78 @@ Format: Most recent changes listed first within each version.
 
 ---
 
+## [2.2.0] — 2026-10-05 | CV Build + ATS Gate + intake v4 + fallback ladder + hooks + release harness
+
+Built from the CV & ATS Requirements Spec v0.11.0 ([docs/CV_ATS_REQUIREMENTS_SPEC_v0.11.0.md](docs/CV_ATS_REQUIREMENTS_SPEC_v0.11.0.md)). Fully compatible with 2.1.1: every phase number, the 5/5 gate format, consent tiers, A01–A16, execution modes and the 12 original invariants are kept (spec Part 7.9).
+
+**Added — Workflow (SKILL.md · rules.json)**
+
+- **Phase 2 Step 2A** job analysis: numbered requirements, locked weighted keyword list shared with the fit check (INT-06); gap log.
+- **Phase 3B CV Build** ([references/cv-build.md](references/cv-build.md)) and **Phase 3C ATS Gate** ([references/ats-gate.md](references/ats-gate.md), GATE-00 to GATE-18) with [scripts/ats_gate.py](scripts/ats_gate.py): layout lint, 2-reader read test, visual review, coverage ≥ 90%, repeat cap, evidence trace, knockout alignment, hygiene, country profile, freeze with fingerprint (`record-pass`, `verify-upload`, `check-stale`).
+- **Hybrid scoring:** mandatory 5/5 gates M1–M5 plus visible grades with reasons for every other phase; escalation to a blocking gate at 3 or lower.
+- **Phase 6 Combined Final Verdict** (Check 9: ATS Gate PASS); **Phase 7** application log, 7/14/21-day follow-up window, interview prep when an interview is booked.
+- **Intake questionnaire v4** ([references/intake-questionnaire.md](references/intake-questionnaire.md)): 5 paths, privacy classes, expiry dates, Arabic labels, auto-translation; at most 10 questions per message under "Questions for you (N)"; no government ID numbers.
+- **Country profiles** ([references/country-profiles.md](references/country-profiles.md)): US, UK, Germany, Netherlands, UAE/GCC, Saudi Arabia, General International (page size, date format, first-job section order).
+- Templates: handoff record, gap log, application log ([references/application-log-template.md](references/application-log-template.md)).
+- **Invariants 13–19.** Invariant 19: never stop on a missing tool before the fallback ladder; never lower a consent tier when falling back.
+- **Capability wording:** replies never name a browser, browser-automation product or desktop-app brand, never say "on your computer", and promise no action unless the A0 Capability Map shows that tool ACTIVE. Form filling: "I can fill the form if you approve each step" only with browser control ACTIVE; otherwise "I'll give you answers to paste". Checked on every eval reply and by the self-test.
+- **Side-effects line:** replies that finish Phases 3C–6 or run an automation end by saying what was uploaded, sent or submitted.
+
+**Added — automation-registry.json**
+
+- **A17** CV File Export (Phase 3C, Tier 2, `APPROVE CREATE`; one approval per application by default).
+- **A18** Vision / Browser / Computer-Use Fallback and Visual Audit (Tier 1; actions keep their own tier) with [references/automation-playbooks/vision-browser-computer-fallback.md](references/automation-playbooks/vision-browser-computer-fallback.md). Browser order follows the registry (BrowserBase, Playwright, then a host-reported browser tool from the Capability Map).
+
+**Added — Hooks, harness and evals**
+
+- [hooks/](hooks/): opt-in Claude Code hooks — pre-upload guard (blocks an untested CV) and post-change stale check (cancels a PASS after an edit); plugin `hooks.json`, settings snippet, README.
+- [scripts/selftest.py](scripts/selftest.py): 90 checks — structure, version agreement, gate on clean and planted-fault fixtures, PASS state, hooks, evals, one regression check per fixed bug.
+- [evals/](evals/): 6 test cases with fixtures, `grade.py` (exit code set by the new version only) and the last run's replies in `results/latest/`. Final run: 40/40 (100%) vs 24/40 for v2.1.1. The password check no longer flags a reply that says it will never type your password. Final run: 25/25 (100%) vs 17/25 for v2.1.1.
+
+**Updated — automation-registry.json · rules.json · SKILL.md**
+
+- A04 uploads only the fingerprinted CV from the latest ATS Gate PASS.
+- Phase 0, Phase 6 and Phase 7 scores become visible grades (blocking only when escalated).
+- Phase 3 runs before any writing and adds knockout criteria, country profile and positioning source.
+- A0: one first message (3–5 line summary + extracted details + first questions; reply counts as "Begin"); also checks CV export, text readers, browser / computer use / vision.
+- Session entry: no CV and no link with "help me apply" → Mode A after setup.
+- Version fields **2.2.0** (`SKILL.md` metadata, `rules.json` `skill.version` + `automation_layer.version`, `automation-registry.json` `registry_version`).
+
+**Moved (content unchanged unless marked "v2.2.0")**
+
+- First-Use Protocol, Automation Layer and Platform Execution Notes moved from `SKILL.md` to `references/` for progressive disclosure.
+
+**Updated — Canonical docs**
+
+- [docs/platform-capabilities.md](docs/platform-capabilities.md): sub-phases and scoring model per host; Phase 3C needs code execution; A18 section; Claude Code section (hooks, maintainers).
+- [docs/EXECUTION_MODES.md](docs/EXECUTION_MODES.md): v2.2.0 scoring model; re-anchor checks the ATS Gate PASS; fallback never lowers a tier.
+- [docs/MANDATORY_EXCLUSIONS.md](docs/MANDATORY_EXCLUSIONS.md): untested uploads and government IDs hard-prohibited; A18 registry-native (section B/C); new section F (hooks).
+- [docs/REMEDIATION_INVENTORY.md](docs/REMEDIATION_INVENTORY.md): v2.2.0 touch surfaces and grep checks.
+
+**Fixed — found during eval runs (each has a regression check)**
+
+- `record-pass` crashed on the saved output of `all`; now reads it.
+- Text reader left XML entities ("P&amp;L"); fonts set through styles and themes were not seen; white or tiny text, fonts outside the allowed list and body sizes outside 10–12 pt now fail layout lint.
+- Duplicate or out-of-order headings now fail hygiene; "I" in "I/O" or "Phase I" is no longer counted as a pronoun.
+- Verdict always agrees with the grade (PASS only at 5/5; PASS WITH WAIVERS otherwise without Must failures; exit 0 for both).
+- Missing keyword list or expected name/email stops the gate (exit 2); an empty keyword list never counts as full coverage. `all` also accepts a keywords file path and writes a pure-JSON report with `--out` for the evidence pack.
+- File size over the limit is Should-level (4/5), not a Must failure. A PDF tested without its DOCX is flagged.
+- `record-pass` could freeze a file without a gate report, from a hand-written report, or for another job. It now takes `--config` (which names the job), re-runs every counted check itself, and freezes only a real PASS for that job. Uploads are checked against the job in progress, and a changed keyword list cancels the job's PASS.
+- Line breaks inside a paragraph were dropped, gluing words ("SQLKubernetes") and hiding keywords; the read test passed with nothing to compare; `fingerprint` and `render` exited 1 on success; a missing approved CV text silently fell back to loose keyword matching (now a visible warning).
+- **Hardening from an adversarial review (12 confirmed bypasses, all fixed with regression checks):** renamed XML namespace prefixes and decoy document parts no longer hide content (main part found through package relationships); embedded documents (`altChunk`), floating frames, tracked moves and all change types, header/footer/comment parts under any name, and header images now fail lint; hidden and white/near-white text are caught in any attribute form and through styles; fonts and sizes follow the full style chain and the flagged default style; hygiene catches all-caps and more pronouns (allowing the country "US") and TODO/TBC/lorem ipsum/blank placeholders; PDFs fail on invisible text (render mode 3), must match their DOCX word for word (≥ 90%), and report missing PDF tools instead of passing silently; the upload hook covers more CV file names and types, shell uploads (curl, scp, rsync, sftp), `file://` paths, and blocks CV paths it can't check.
+- Self-test read `name` and `version` as raw text, so the quotes an installer adds (`name: "job-application-engine"`, `version: '2.2.0'`) failed it; they are now read as values.
+- Vendor browser brand removed from A18 (MANDATORY_EXCLUSIONS section D); `rules.json` `automation_layer.version` aligned.
+
+**Updated — README.md**
+
+- What's New in 2.2.0; workflow diagram with Phases 2A, 3B, 3C, mandatory gates M1–M5, visible grades (new yellow diamond), upload verification and the A18 ladder; legend; **18** automations **A01–A18**; repository structure; install links and asset `JAE-v2.2.0-Generic-Universal-2026-10-05.zip`; Claude Code section; key design decisions.
+
+**Added — release note for this publish**
+
+- [docs/GITHUB_RELEASE_v2.2.0.md](docs/GITHUB_RELEASE_v2.2.0.md) with highlights, install paths, and asset/SHA section; build review in [docs/REVIEW_v2.2.0.md](docs/REVIEW_v2.2.0.md).
+
+---
+
 ## [2.1.1] — 2026-04-25 | Repo audit reconciliation + release alignment
 
 **Updated — README.md**

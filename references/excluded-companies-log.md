@@ -40,3 +40,10 @@ Outcomes Log regardless of branch (submitted, withdrawn, or rejected).
 
 After every offer received: update salary-anchors-template.md with the
 offered figure, currency, and outcome (accepted or declined).
+
+---
+
+## v2.2.0 — Link to the application log
+
+Each entry also gets an application log record (`references/application-log-template.md`).
+Write both under the same `APPROVE UPDATE` rule.

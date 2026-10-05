@@ -60,6 +60,13 @@ STEP 4 — Build field map:
 ---
 ## Stage 2 — Browser Form Filling (A04, Tier 3 — APPROVE FILL)
 
+> **v2.2.0 — upload only the tested file (GAP-11):** the CV upload must be
+> the fingerprinted file from the latest ATS Gate PASS for this job. Before
+> uploading, recompute its fingerprint (`scripts/ats_gate.py fingerprint`),
+> compare it with the gate report and confirm the job ID. Stop on any
+> mismatch or if no PASS exists. DOCX is the main file; add the PDF when the
+> portal accepts two files. Record the fingerprint in the application log.
+
 Prerequisite: All 8 Governance Gate checks must pass at score 5 before
 this action is offered. Do not offer A04 before Phase 6 completes.
 
@@ -68,7 +75,11 @@ STEP 1 — Tool selection:
   If BrowserBase ACTIVE: proceed with BrowserBase.
   If BrowserBase INACTIVE + Playwright ACTIVE: present Playwright disclosure
     if not shown this session. If user accepts, proceed with Playwright.
-  If both INACTIVE: switch to pre-staged answers mode (see below).
+  If both INACTIVE: switch to pre-staged answers mode (see below) and tell the person
+  "I'll give you answers to paste". Say "I can fill the form if you approve each
+  step" only when browser control is ACTIVE in the A0 Capability Map (never as a
+  later or "if connected" option). Never name
+  a browser or app brand to the person, and never say "on your computer".
 
 STEP 2 — Present Tier 3 consent gate:
 
@@ -89,7 +100,7 @@ STEP 3 — Execute (only after exact APPROVE FILL received):
   Map each field from the field map (Stage 1 Step 4) to the confirmed
     answer from the application package.
   Fill each field in order.
-  For file uploads (CV/resume): upload the file provided by the user.
+  For file uploads (CV/resume): upload the fingerprinted file from the latest ATS Gate PASS (v2.2.0); in v2.1.1 this was the file provided by the user.
     If no file is provided, skip the upload and flag to the user.
   For privacy consent checkboxes: check them only if the user has
     indicated consent during Phase 3 intake.

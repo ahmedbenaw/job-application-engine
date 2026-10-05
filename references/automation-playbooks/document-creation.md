@@ -33,6 +33,30 @@ STEP 5 — If no: proceed. The file is available locally. Never save to cloud
 Never reverse this sequence. Never offer cloud save before local download.
 
 ---
+## A17 — CV File Export for the ATS Gate (v2.2.0)
+
+### When to Trigger
+Phase 3C, after M4 passes. Re-runs whenever the ATS Gate retries after a fix.
+
+### Consent Gate (Tier 2 — APPROVE CREATE)
+By default one `APPROVE CREATE`, asked at M4, covers every export and
+re-test for this job. If the person chose "approve every export", ask before
+each one. Show: file names, formats (DOCX main, PDF), and that the files stay local.
+
+### Creation Specifications
+Single column; no tables, text boxes, images, shapes or charts; contact
+details in the body, never in the page header or footer; one standard font
+(Calibri, Arial, Helvetica or Georgia), body 10–12 pt, name 14–18 pt;
+standard bullets; URLs written out; document properties title "Firstname
+Lastname – CV" and author = candidate name; no comments, tracked changes or
+hidden text; PDF with a real text layer and embedded fonts. File name:
+`Firstname-Lastname-CV-[Role].docx` / `.pdf`. Full rules: `references/ats-gate.md` (GAP-02, GATE-02).
+
+### Fallback
+If no document tool is available, deliver the CV text inline with these
+formatting instructions, mark the ATS Gate as unable to run the file checks,
+and never claim a file was tested.
+
 ## A06 — Cover Letter DOCX Creation
 
 ### When to Trigger

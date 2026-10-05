@@ -112,3 +112,14 @@ piece — some short, some longer. Specific details replace vague claims.
 The writing voice matches the candidate's seniority level and sector.
 No sentence from Pass 1 pattern families remains. No chatbot artifacts.
 No passive voice in evidence paragraphs.
+
+---
+
+## v2.2.0 — Protected terms (INT-03, RES-02)
+
+Before either pass, receive the locked keyword list from Phase 2 Step 2A.
+Those terms are never changed: same spelling, hyphenation, word order and
+number. This overrides Family 5's advice to vary hyphenated pairs such as
+"cross-functional": vary the words around a locked term, never the term.
+After the passes, compare the locked terms before and after; any change is a
+failure. The same pass runs on the CV text in Phase 3B and on the package in Phase 5.

@@ -76,3 +76,19 @@ background is in managing React-based product delivery rather than writing
 production code. In practice, Alex has prototyped front-end features using
 AI-assisted tools and has shipped working UIs into production in close
 collaboration with engineering leads."
+
+---
+
+## v2.2.0 — Step 2A and the shared requirement list (INT-06)
+
+Step 2A runs first inside Phase 2: number every requirement, mark it
+must-have or nice-to-have, build the locked keyword list (exact wording,
+weighted by repetition, with variants), and link each keyword to its
+requirement number. The fit analysis then works on the same numbered list:
+each requirement carries its keywords, its evidence ID and its fit result.
+
+- No keyword without a requirement number; no requirement without its keywords.
+- A keyword that can't be proven goes into the gap log once, under its requirement number.
+- At M2, show the Step 2A grade line and the fit verdict side by side.
+
+Full rules: `references/workflow-integration.md` (INT-06, REQ-39).

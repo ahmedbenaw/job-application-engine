@@ -1,0 +1,56 @@
+{
+  "files": [
+    "good_cv.docx",
+    "good_cv.pdf"
+  ],
+  "original_text": "original_cv.txt",
+  "expected": {
+    "name": "Alex M.",
+    "email": "alex@example.com",
+    "titles": [
+      "Senior Product Manager"
+    ],
+    "companies": [
+      "DataFlow GmbH"
+    ],
+    "dates": [
+      "Jan 2021 \u2013 Present"
+    ],
+    "headings": [
+      "Summary",
+      "Skills",
+      "Experience",
+      "Education"
+    ]
+  },
+  "keywords": [
+    {
+      "term": "product discovery",
+      "must": true,
+      "weight": 3
+    },
+    {
+      "term": "SQL",
+      "must": true,
+      "weight": 2
+    },
+    {
+      "term": "A/B testing",
+      "must": true,
+      "weight": 2
+    },
+    {
+      "term": "roadmap",
+      "must": false,
+      "weight": 1
+    }
+  ],
+  "allowed_fonts": [
+    "Calibri",
+    "Arial"
+  ],
+  "max_mb": 2,
+  "repeat_cap": 4,
+  "coverage_target": 0.9,
+  "approved_text": "approved_cv.txt"
+}

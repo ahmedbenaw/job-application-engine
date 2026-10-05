@@ -119,3 +119,63 @@ at each gate. The artifact persists across the subagent coordination flow.
 
 Manus: maintain the checklist as a text block in the session instruction
 context. Update it in place at each gate by replacing the previous version.
+
+---
+
+## v2.2.0 — Status board
+
+The live board is in SKILL.md ("Status board"). It adds rows for Setup
+(readiness), Phase 2A, Phase 3B and Phase 3C, shows M1–M5 scores for the
+mandatory gates and grades for complementary phases. Every complementary
+phase also prints its one-line grade with reasons (INT-05).
+
+## v2.1.1 inline checklist (moved here unchanged, superseded by the v2.2.0 board)
+
+### Dynamic Session Checklist (v2.1.1)
+
+Print this board at the start of every phase. Update status and score after
+each gate. Replace bracketed tokens with live session values.
+
+```
+╔════════════════════════════════════════════════════════════════════╗
+║          JOB APPLICATION ENGINE — SESSION STATUS BOARD            ║
+╠════════════════════════════════════════════════════════════════════╣
+║  Phase 0 │ Job Discovery          │ [STATUS] │ Score: [ /5]       ║
+║  Phase 1 │ Company Intelligence   │ [STATUS] │ Score: [ /5]       ║
+║  Phase 2 │ Fit Analysis           │ [STATUS] │ Score: [ /5]       ║
+║  Phase 3 │ Clarifying Intake      │ [STATUS] │ Score: [ /5]       ║
+║  Phase 4 │ Application Package    │ [STATUS] │ Score: [ /5]       ║
+║  Phase 5 │ Writing Quality Pass   │ [STATUS] │ Score: [ /5]       ║
+║  Phase 6 │ Governance Gate        │ [STATUS] │ Score: [ /5]       ║
+║  Phase 7 │ Post-Submission Loop   │ [STATUS] │ Score: [ /5]       ║
+╠════════════════════════════════════════════════════════════════════╣
+║  Active Phase : [PHASE NAME]                                      ║
+║  Current Gate : [GATE DESCRIPTION]                                ║
+║  Awaiting     : [WHAT IS NEEDED FROM USER]                        ║
+║  Candidate    : [CANDIDATE_NAME]                                  ║
+║  Session Role : [ROLE_TITLE]     Company: [COMPANY_NAME]          ║
+╚════════════════════════════════════════════════════════════════════╝
+
+Status codes: ⏳ Pending | 🔄 Active | 🔁 Revision | ✅ Complete | 🚫 Blocked
+```
+
+Example (Alex M., fictional mock candidate):
+```
+║  Candidate    : Alex M.                                           ║
+║  Session Role : Senior Product Manager    Company: CloudBase Inc  ║
+║  Phase 2      : Fit Analysis    │ ✅ Complete │ Score: 5/5        ║
+```
+
+Scoring gate format — present after every phase output:
+
+```
+── PHASE [N] REVIEW GATE ──────────────────────────────────────────
+Please respond with:
+  1. What was correct
+  2. Your score from 1 to 5  (5 required to proceed)
+  3. What you expected for a perfect result at this phase
+If score < 5, state what to revise. This phase reruns before advancing.
+───────────────────────────────────────────────────────────────────
+```
+
+---

@@ -1,0 +1,376 @@
+{
+  "skill_name": "job-application-engine",
+  "version": "2.2.0",
+  "how_to_run": "See evals/README.md. Each eval runs the skill on the prompt with the listed fixture files, saves the reply to outputs/response.md, then evals/grade.py checks every assertion.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "mode-b-new-candidate-cv-and-jd",
+      "prompt": "Hi, I want to apply for this job. My CV and the job ad are in the attached file. Can you help me apply?",
+      "files": [
+        "fixtures/cv_and_jd.md"
+      ],
+      "expected_output": "Detects Mode B, extracts the CV first, asks only the first small batch of missing facts, shows the status board with Phases 2A, 3B and 3C, marks Phase 0 skipped, and writes no CV or cover letter yet.",
+      "assertions": [
+        {
+          "text": "Detects Mode B and marks Phase 0 skipped",
+          "check": {
+            "type": "regex",
+            "pattern": "Phase 0[^\\n]*Skipped"
+          }
+        },
+        {
+          "text": "Status board shows Phases 2A, 3B and 3C",
+          "check": {
+            "type": "all_regex",
+            "patterns": [
+              "Phase 2A",
+              "Phase 3B",
+              "Phase 3C"
+            ]
+          }
+        },
+        {
+          "text": "Extracts the CV before asking questions",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)EXTRACTED|E-1-1|from your CV"
+          }
+        },
+        {
+          "text": "Writes no CV or cover letter before Phase 3",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?im)^\\s*Dear |I'll follow up on|^#+\\s*Professional Experience"
+          }
+        },
+        {
+          "text": "Marks private answers and allows N/A",
+          "check": {
+            "type": "all_regex",
+            "patterns": [
+              "(?i)private",
+              "N/A"
+            ]
+          }
+        },
+        {
+          "text": "First turn asks 10 questions or fewer",
+          "check": {
+            "type": "max_questions",
+            "max": 10
+          }
+        },
+        {
+          "text": "Names no browser or app brand and never says \"on your computer\"",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i:\\bon your (?:own )?computer\\b)|\\b(?:Google Chrome|Chrome|Safari|Firefox|Microsoft Edge|Edge browser|BrowserBase|Browserbase|Playwright|Puppeteer|Selenium|Acrobat|Adobe Reader|Microsoft Word|MS Word|LibreOffice|OpenOffice|Google Docs|Apple Pages)\\b|\\b(?:in|with|using) (?:Word|Preview|Pages)\\b"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ats-gate-on-flawed-cv-file",
+      "prompt": "Everything up to the CV text is already approved (M1 to M4 all 5/5, APPROVE CREATE given). Run the ATS test on my exported CV file Alex-M-CV-Senior-PM.docx using the locked keywords in locked_keywords.json and tell me if it can be sent.",
+      "files": [
+        "fixtures/Alex-M-CV-Senior-PM.docx",
+        "fixtures/locked_keywords.json"
+      ],
+      "expected_output": "Runs the Phase 3C ATS Gate on the real file with scripts/ats_gate.py, reports FAIL with plain reasons, prints a grade line with reasons, uploads nothing.",
+      "assertions": [
+        {
+          "text": "Says the file cannot be sent",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)can'?t be sent|cannot be sent|not sendable|FAIL"
+          }
+        },
+        {
+          "text": "Flags the table",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)table"
+          }
+        },
+        {
+          "text": "Flags contact text in the page header",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)page header|in the header|header text"
+          }
+        },
+        {
+          "text": "Flags placeholder text and the first-person pronoun",
+          "check": {
+            "type": "all_regex",
+            "patterns": [
+              "\\[X\\]|TBD",
+              "(?i)pronoun|\"I\""
+            ]
+          }
+        },
+        {
+          "text": "Flags missing must-have Kubernetes",
+          "check": {
+            "type": "regex",
+            "pattern": "Kubernetes"
+          }
+        },
+        {
+          "text": "Prints a grade line with reasons",
+          "check": {
+            "type": "regex",
+            "pattern": "ATS Gate[^\\n]*[0-5]/5"
+          }
+        },
+        {
+          "text": "Runs the bundled ats_gate.py (its report is saved with the outputs)",
+          "check": {
+            "type": "file_contains",
+            "pattern": "ATS Gate \\(counted checks\\)|\"grade_line\"",
+            "response_pattern": "scripts/ats_gate\\.py"
+          }
+        },
+        {
+          "text": "Uploads or submits nothing",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)nothing (was |has been )?(uploaded|sent|submitted)|not (been )?(uploaded|submitted)"
+          }
+        },
+        {
+          "text": "Names no browser or app brand and never says \"on your computer\"",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i:\\bon your (?:own )?computer\\b)|\\b(?:Google Chrome|Chrome|Safari|Firefox|Microsoft Edge|Edge browser|BrowserBase|Browserbase|Playwright|Puppeteer|Selenium|Acrobat|Adobe Reader|Microsoft Word|MS Word|LibreOffice|OpenOffice|Google Docs|Apple Pages)\\b|\\b(?:in|with|using) (?:Word|Preview|Pages)\\b"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "first-job-student-no-cv",
+      "prompt": "i'm a final year stats student in riyadh, no cv yet and never had a real job. i want data analyst internships. can you help me apply?",
+      "files": [],
+      "expected_output": "Uses the intake questionnaire on the first-job path, invents no experience, routes to discovery (Mode A) or asks for an ad, applies Saudi context, asks a small first batch.",
+      "assertions": [
+        {
+          "text": "Uses the first-job path: objective, projects, coursework",
+          "check": {
+            "type": "all_regex",
+            "patterns": [
+              "(?i)first[- ]job",
+              "(?i)project|coursework|objective"
+            ]
+          }
+        },
+        {
+          "text": "Invents no experience",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i)\\binterned at [A-Z]|worked as a data analyst at"
+          }
+        },
+        {
+          "text": "Offers job discovery or asks for an ad",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)Mode A|job discovery|discover|job (ad|link)"
+          }
+        },
+        {
+          "text": "Applies Saudi Arabia context",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)Saudi|iqama"
+          }
+        },
+        {
+          "text": "First turn asks 10 questions or fewer",
+          "check": {
+            "type": "max_questions",
+            "max": 10
+          }
+        },
+        {
+          "text": "Names no browser or app brand and never says \"on your computer\"",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i:\\bon your (?:own )?computer\\b)|\\b(?:Google Chrome|Chrome|Safari|Firefox|Microsoft Edge|Edge browser|BrowserBase|Browserbase|Playwright|Puppeteer|Selenium|Acrobat|Adobe Reader|Microsoft Word|MS Word|LibreOffice|OpenOffice|Google Docs|Apple Pages)\\b|\\b(?:in|with|using) (?:Word|Preview|Pages)\\b"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "blocked-job-page-fallback",
+      "prompt": "Can you help me apply for this senior data analyst job? My CV and the job link are in the file. The page doesn't load properly for me.",
+      "files": [
+        "fixtures/blocked_job_link.md"
+      ],
+      "expected_output": "Does not stop when the job page can't be fetched: names the fallback ladder (browser use, computer use, vision, then asking the person to paste), says which rung is next, keeps going with the CV extraction, and keeps consent tiers.",
+      "assertions": [
+        {
+          "text": "Does not give up when the page can't be fetched",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i)I can'?t help with this|unable to proceed"
+          }
+        },
+        {
+          "text": "Checks browser control for the job page (uses it only if the Capability Map shows it active)",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)browser"
+          }
+        },
+        {
+          "text": "Names vision or screenshots as a fallback",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)screenshot|vision|as an image"
+          }
+        },
+        {
+          "text": "Asks the person to paste the job ad only as a last resort",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)paste"
+          }
+        },
+        {
+          "text": "Continues with the CV extraction in the same reply",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)EXTRACTED|E-1-1|from your CV|NileMart"
+          }
+        },
+        {
+          "text": "Never asks for passwords or login details (stating it won't type them is fine)",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i)(?<!never )(?<!not )(?<!n't )(?<!won't )\\b(send|give|share|type|enter|tell)( me)? your (password|passwords|login details|one-time code)"
+          }
+        },
+        {
+          "text": "Names no browser or app brand and never says \"on your computer\"",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i:\\bon your (?:own )?computer\\b)|\\b(?:Google Chrome|Chrome|Safari|Firefox|Microsoft Edge|Edge browser|BrowserBase|Browserbase|Playwright|Puppeteer|Selenium|Acrobat|Adobe Reader|Microsoft Word|MS Word|LibreOffice|OpenOffice|Google Docs|Apple Pages)\\b|\\b(?:in|with|using) (?:Word|Preview|Pages)\\b"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "form-fill-browser-inactive",
+      "prompt": "Everything is done up to Phase 6 and the final check passed. Please fill in the application form for me now.",
+      "files": [
+        "fixtures/phase6_ready.md"
+      ],
+      "session_capabilities": "This session's A0 Capability Map shows: web search and web fetch ACTIVE; image viewing ACTIVE; browser control INACTIVE; computer use INACTIVE; file creation ACTIVE.",
+      "expected_output": "Browser control is inactive, so it does not promise to fill the form; it gives the approved answers ready to paste, field by field, and names no browser or app brand.",
+      "assertions": [
+        {
+          "text": "Says it will give answers to paste",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)answers to paste"
+          }
+        },
+        {
+          "text": "Does not promise to fill the form itself",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i)\\bI (?:can|will|'ll) fill (?:in )?(?:the|your|this) (?:application )?form\\b(?! if you approve each step)|I can fill the form if you approve each step"
+          }
+        },
+        {
+          "text": "Lists the approved answers field by field",
+          "check": {
+            "type": "all_regex",
+            "patterns": [
+              "95000|95,000",
+              "3 months",
+              "alex@example\\.com"
+            ]
+          }
+        },
+        {
+          "text": "Never asks for passwords or login details (stating it won't type them is fine)",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i)(?<!never )(?<!not )(?<!n't )(?<!won't )\\b(send|give|share|type|enter|tell)( me)? your (password|passwords|login details|one-time code)"
+          }
+        },
+        {
+          "text": "Names no browser or app brand and never says \"on your computer\"",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i:\\bon your (?:own )?computer\\b)|\\b(?:Google Chrome|Chrome|Safari|Firefox|Microsoft Edge|Edge browser|BrowserBase|Browserbase|Playwright|Puppeteer|Selenium|Acrobat|Adobe Reader|Microsoft Word|MS Word|LibreOffice|OpenOffice|Google Docs|Apple Pages)\\b|\\b(?:in|with|using) (?:Word|Preview|Pages)\\b"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "form-fill-browser-active",
+      "prompt": "Everything is done up to Phase 6 and the final check passed. Please fill in the application form for me now.",
+      "files": [
+        "fixtures/phase6_ready.md"
+      ],
+      "session_capabilities": "This session's A0 Capability Map shows: web search and web fetch ACTIVE; image viewing ACTIVE; browser control ACTIVE; computer use INACTIVE; file creation ACTIVE.",
+      "expected_output": "Browser control is active, so it offers to fill the form step by step, shows a full preview and asks for APPROVE FILL before typing anything; names no browser or app brand.",
+      "assertions": [
+        {
+          "text": "Offers to fill the form with step-by-step approval",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)I can fill the form if you approve each step"
+          }
+        },
+        {
+          "text": "Shows a preview before filling",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)preview"
+          }
+        },
+        {
+          "text": "Asks for the exact phrase APPROVE FILL",
+          "check": {
+            "type": "regex",
+            "pattern": "APPROVE FILL"
+          }
+        },
+        {
+          "text": "Checks the upload is the tested CV",
+          "check": {
+            "type": "regex",
+            "pattern": "(?i)verify-upload|tested (?:CV )?file|fingerprint|passed the ATS Gate|ATS Gate PASS"
+          }
+        },
+        {
+          "text": "Never asks for passwords or login details (stating it won't type them is fine)",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i)(?<!never )(?<!not )(?<!n't )(?<!won't )\\b(send|give|share|type|enter|tell)( me)? your (password|passwords|login details|one-time code)"
+          }
+        },
+        {
+          "text": "Names no browser or app brand and never says \"on your computer\"",
+          "check": {
+            "type": "not_regex",
+            "pattern": "(?i:\\bon your (?:own )?computer\\b)|\\b(?:Google Chrome|Chrome|Safari|Firefox|Microsoft Edge|Edge browser|BrowserBase|Browserbase|Playwright|Puppeteer|Selenium|Acrobat|Adobe Reader|Microsoft Word|MS Word|LibreOffice|OpenOffice|Google Docs|Apple Pages)\\b|\\b(?:in|with|using) (?:Word|Preview|Pages)\\b"
+          }
+        }
+      ]
+    }
+  ],
+  "capability_wording": {
+    "text": "Names no browser or app brand and never says \"on your computer\"",
+    "pattern": "(?i:\\bon your (?:own )?computer\\b)|\\b(?:Google Chrome|Chrome|Safari|Firefox|Microsoft Edge|Edge browser|BrowserBase|Browserbase|Playwright|Puppeteer|Selenium|Acrobat|Adobe Reader|Microsoft Word|MS Word|LibreOffice|OpenOffice|Google Docs|Apple Pages)\\b|\\b(?:in|with|using) (?:Word|Preview|Pages)\\b"
+  }
+}

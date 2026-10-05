@@ -14,7 +14,9 @@ CoWork product context (host-dependent): [Claude CoWork (Anthropic)](https://www
 - **Hidden subagents:** Spawning or routing to agents or parallel threads not described in `SKILL.md` and `platform_routing` in [rules.json](../rules.json). CoWork Tier-1 parallelism is **read-only and skill-authored** only; **Tier 2/3 never on subagents.**
 - **Irreversible actions without consent:** Submit/send/fill and other Tier 2/3 actions without the **exact** approval path defined in the skill and registry.
 - **Scoring = approval:** Using a phase score, “yes,” or paraphrase as a substitute for Tier 2/3 approval phrases.
-- **Credential persistence:** Storing or replaying the user’s job-platform or email credentials outside the session rules in `automation_layer`.
+- **Credential persistence:** Storing or replaying the user’s job-platform or email credentials outside the session rules in `automation_layer`. The person logs in themselves; JAE never types passwords or one-time codes (v2.2.0, A18).
+- **Untested uploads (v2.2.0):** Uploading or attaching a CV file that is not the fingerprinted file from the latest ATS Gate PASS for that job (GAP-11, invariant 15), or testing a CV through an employer's live application form.
+- **Government ID numbers (v2.2.0):** Collecting or printing them, in the intake questionnaire or on a CV (INQ-07, invariant 16).
 
 JAE is a **custom skill**, not a host product. It does not imply Anthropic (or any vendor) endorses this repository.
 
@@ -32,11 +34,13 @@ These are **not** “excluded from CoWork.” They are **excluded as unsupervise
 
 **JAE must not** claim to configure OS-level crons, external schedulers, or headless **unattended** jobs **as a named JAE automation** unless a future registry entry explicitly defines them.
 
+**v2.2.0 — A18 (fallback ladder and visual audit):** browser use, computer use and vision are now declared in the registry as **A18**, so they are registry-native (section C), not ungoverned claims. They may run in **either** execution mode, but only when the host exposes them, only inside a live session with the person present, only under the host's own consent UI, and never lowering a consent tier: reading and looking are Tier 1; creating stays Tier 2; filling, submitting and sending stay Tier 3.
+
 ---
 
 ## C. Registry-native (JAE must declare)
 
-Any action presented as a **JAE-executed** automation (A01–A16, etc.) must appear in [automation-registry.json](../automation-registry.json) with **phase, tier, approval phrase, and scope boundary.** Browser automation in JAE remains **BrowserBase (primary) / Playwright (secondary)** per registry — not a separate “Chrome” vendor primitive; map host-bundled browser experiences to the Capability Map, not a forked JAE code path (see D).
+Any action presented as a **JAE-executed** automation (A01–A18) must appear in [automation-registry.json](../automation-registry.json) with **phase, tier, approval phrase, and scope boundary.** Browser automation in JAE remains **BrowserBase (primary) / Playwright (secondary)** per registry — not a separate “Chrome” vendor primitive; map host-bundled browser experiences to the Capability Map, not a forked JAE code path (see D). A18 follows the same order: BrowserBase, then Playwright, then a host-reported browser tool shown in the Capability Map.
 
 If a new host feature is needed in scope, add it to the registry and `CHANGELOG.md` in a versioned release.
 
@@ -44,13 +48,19 @@ If a new host feature is needed in scope, add it to the registry and `CHANGELOG.
 
 ## D. Named browser products (not separate JAE primitives)
 
-JAE does **not** branch on vendor-specific browser brand names (e.g. a particular browser) as a **distinct** execution path. The Capability Map uses **MCP and host-reported** tool status. Host marketing names for connectors are mapped to the same JAE rules.
+JAE does **not** branch on vendor-specific browser brand names (e.g. a particular browser) as a **distinct** execution path. **v2.2.0:** replies to the person name no browser, browser-automation product or desktop-app brand at all, never say "on your computer", and promise no action unless the A0 Capability Map shows that tool ACTIVE (checked by the evals and `scripts/selftest.py`). The Capability Map uses **MCP and host-reported** tool status. Host marketing names for connectors are mapped to the same JAE rules.
 
 ---
 
 ## E. Unattended scheduling (strict meaning)
 
 **JAE does not** define or trigger **timer-based, fully unattended** workflows that have **no** live user session. In-session **calendar (A10)** and host **scheduled tasks** the user sets **outside** JAE are outside this skill’s registry unless explicitly added later.
+
+---
+
+## F. Enforcement hooks (v2.2.0, Claude Code only)
+
+`hooks/` ships two **opt-in** Claude Code hooks: a pre-upload guard (blocks a CV that is not the file from the latest ATS Gate PASS, on upload tools and on shell commands that send files) and a post-change check (cancels a PASS after an edit). They are declared in `hooks/hooks.json`, run local Python only, make no network calls, and write only the PASS state file (`jae-state/gate_pass.json` or `$JAE_STATE_DIR`). They are not JAE automations (no `Axx`) and add no capability; they only enforce rules the skill already states. Hosts that don't run hooks (Claude.ai, CoWork, Manus) keep the same rules as instructions.
 
 ---
 
