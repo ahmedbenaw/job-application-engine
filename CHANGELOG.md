@@ -5,6 +5,14 @@ Format: Most recent changes listed first within each version.
 
 ---
 
+## [Unreleased]
+
+**Updated — docs/GITHUB_RELEASE_v2.2.0.md**
+
+- SHA256 reproduce command now sets `TZ=Asia/Riyadh`: `git archive` zips store local-time file stamps, so the published digest only reproduces in UTC+3.
+
+---
+
 ## [2.2.0] — 2026-10-05 | CV Build + ATS Gate + intake v4 + fallback ladder + hooks + release harness
 
 Built from the CV & ATS Requirements Spec v0.11.0 ([docs/CV_ATS_REQUIREMENTS_SPEC_v0.11.0.md](docs/CV_ATS_REQUIREMENTS_SPEC_v0.11.0.md)). Fully compatible with 2.1.1: every phase number, the 5/5 gate format, consent tiers, A01–A16, execution modes and the 12 original invariants are kept (spec Part 7.9).

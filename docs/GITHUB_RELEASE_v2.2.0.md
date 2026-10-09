@@ -25,7 +25,7 @@ See [CHANGELOG.md](https://github.com/ahmedbenaw/job-application-engine/blob/mas
 1. **`JAE-v2.2.0-Generic-Universal-2026-10-05.zip`** — flat repo root for Skills upload. Built with `git archive` from tag `v2.2.0`.
 2. **`job-application-engine-plugin.zip`** — Claude Code plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, and the same skill under `skills/job-application-engine/`.
 
-**SHA256:** Use the digest shown on each uploaded GitHub release asset, or reproduce the skill ZIP locally with `git archive --format=zip v2.2.0` and `certutil -hashfile` / `shasum -a 256`.
+**SHA256:** Use the digest shown on each uploaded GitHub release asset, or reproduce the skill ZIP locally with `TZ=Asia/Riyadh git archive --format=zip v2.2.0` and `certutil -hashfile` / `shasum -a 256`. `git archive` writes file times in the local timezone, so the digest only matches when built in UTC+3 (the tag's commit offset); on Windows, set the clock to a UTC+3 zone or build in WSL with the `TZ=` prefix.
 
 ### Open item
 
