@@ -7,6 +7,10 @@ Format: Most recent changes listed first within each version.
 
 ## [Unreleased]
 
+**Updated — docs/GITHUB_RELEASE_v2.1.0.md · docs/GITHUB_RELEASE_v2.1.1.md**
+
+- Post-release docs fix: the v2.1.0 and v2.1.1 release assets were built in UTC+3 with `core.autocrlf=true`, so they contain CRLF line endings and plain `git archive` never reproduced their digests. Both notes now give the command that does (`TZ=UTC-3 git -c core.autocrlf=true archive …`) and say the assets are CRLF.
+
 **Updated — docs/GITHUB_RELEASE_v2.2.0.md**
 
 - v2.2.0 release notes (post-release docs fix): the SHA256 reproduce command now pins `TZ=UTC-3` and `core.autocrlf=false`, writes the ZIP to a file, and gives the Windows `certutil … SHA256` form. Without these, a rebuild matched the release asset only on a UTC+3 machine with LF checkouts. The `v2.2.0` tag still carries the old wording.
