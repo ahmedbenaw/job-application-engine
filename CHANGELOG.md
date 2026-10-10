@@ -5,6 +5,14 @@ Format: Most recent changes listed first within each version.
 
 ---
 
+## [Unreleased]
+
+**Updated — docs/GITHUB_RELEASE_v2.2.0.md**
+
+- v2.2.0 release notes (post-release docs fix): the SHA256 reproduce command now pins `TZ=UTC-3` and `core.autocrlf=false`, writes the ZIP to a file, and gives the Windows `certutil … SHA256` form. Without these, a rebuild matched the release asset only on a UTC+3 machine with LF checkouts. The `v2.2.0` tag still carries the old wording.
+
+---
+
 ## [2.2.0] — 2026-10-05 | CV Build + ATS Gate + intake v4 + fallback ladder + hooks + release harness
 
 Built from the CV & ATS Requirements Spec v0.11.0 ([docs/CV_ATS_REQUIREMENTS_SPEC_v0.11.0.md](docs/CV_ATS_REQUIREMENTS_SPEC_v0.11.0.md)). Fully compatible with 2.1.1: every phase number, the 5/5 gate format, consent tiers, A01–A16, execution modes and the 12 original invariants are kept (spec Part 7.9).
