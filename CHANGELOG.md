@@ -7,6 +7,10 @@ Format: Most recent changes listed first within each version.
 
 ## [Unreleased]
 
+**Updated — release assets v2.1.0 · v2.1.1**
+
+- Replaced the CRLF release ZIPs with LF-clean rebuilds from the same tags (`TZ=UTC-3 git -c core.autocrlf=false archive …`). Contents and file names are unchanged apart from line endings; the digests changed. Release notes updated to match.
+
 **Updated — docs/GITHUB_RELEASE_v2.1.0.md · docs/GITHUB_RELEASE_v2.1.1.md**
 
 - Post-release docs fix: the v2.1.0 and v2.1.1 release assets were built in UTC+3 with `core.autocrlf=true`, so they contain CRLF line endings and plain `git archive` never reproduced their digests. Both notes now give the command that does (`TZ=UTC-3 git -c core.autocrlf=true archive …`) and say the assets are CRLF.
