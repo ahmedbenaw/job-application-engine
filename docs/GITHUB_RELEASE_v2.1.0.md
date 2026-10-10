@@ -21,8 +21,8 @@ Download **`JAE-v2.1.0-Generic-Universal-2026-04-25.zip`** from Assets (flat rep
 **SHA256:** Use the digest shown on the uploaded GitHub release asset, or rebuild the skill ZIP from tag `v2.1.0` and hash it:
 
 ```bash
-TZ=UTC-3 git -c core.autocrlf=true archive --format=zip -o JAE-v2.1.0.zip v2.1.0
+TZ=UTC-3 git -c core.autocrlf=false archive --format=zip -o JAE-v2.1.0.zip v2.1.0
 shasum -a 256 JAE-v2.1.0.zip    # Windows: certutil -hashfile JAE-v2.1.0.zip SHA256
 ```
 
-This asset was built in UTC+3 from a checkout with `core.autocrlf=true`, so every text file in it has CRLF line endings (the repository itself is LF). Both settings change the digest: `git archive` stamps files with the build machine's local time, and `autocrlf` converts line endings. `TZ=UTC-3` is the POSIX spelling of UTC+3 and works without a timezone database. On Windows, set `TZ` for the shell only (`$env:TZ='UTC-3'` in PowerShell, `set TZ=UTC-3` in cmd). **SHA256 of the ZIP attached to this GitHub release:** `368f755e35faeea2297fe063423fca9d7ab9c504f2ee583a256595e3758a9d5e`.
+The asset was replaced on 2026-10-10 with an LF-clean rebuild. The original upload came from a checkout with `core.autocrlf=true`, so every text file had CRLF line endings. Two settings change the digest: `git archive` stamps files with the build machine's local time (the asset was built in UTC+3), and `core.autocrlf` converts line endings. `TZ=UTC-3` is the POSIX spelling of UTC+3 and works without a timezone database. On Windows, set `TZ` for the shell only (`$env:TZ='UTC-3'` in PowerShell, `set TZ=UTC-3` in cmd). **SHA256 of the ZIP attached to this GitHub release:** `98401725508bd231fd17c6ca867565215e511a0d7da917b275562b0017e73ca1` (the original CRLF upload was `368f755e35faeea2297fe063423fca9d7ab9c504f2ee583a256595e3758a9d5e`).
