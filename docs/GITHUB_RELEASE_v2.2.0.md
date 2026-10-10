@@ -25,7 +25,14 @@ See [CHANGELOG.md](https://github.com/ahmedbenaw/job-application-engine/blob/mas
 1. **`JAE-v2.2.0-Generic-Universal-2026-10-05.zip`** — flat repo root for Skills upload. Built with `git archive` from tag `v2.2.0`.
 2. **`job-application-engine-plugin.zip`** — Claude Code plugin: `.claude-plugin/plugin.json`, `hooks/hooks.json`, and the same skill under `skills/job-application-engine/`.
 
-**SHA256:** Use the digest shown on each uploaded GitHub release asset, or reproduce the skill ZIP locally with `TZ=Asia/Riyadh git archive --format=zip v2.2.0` and `certutil -hashfile` / `shasum -a 256`. `git archive` writes file times in the local timezone, so the digest only matches when built in UTC+3 (the tag's commit offset); on Windows, set the clock to a UTC+3 zone or build in WSL with the `TZ=` prefix.
+**SHA256:** Use the digest shown on each uploaded GitHub release asset, or rebuild the skill ZIP from tag `v2.2.0` and hash it:
+
+```bash
+TZ=UTC-3 git -c core.autocrlf=false archive --format=zip -o JAE-v2.2.0.zip v2.2.0
+shasum -a 256 JAE-v2.2.0.zip    # Windows: certutil -hashfile JAE-v2.2.0.zip SHA256
+```
+
+Two settings change the digest. `git archive` stamps each file with the build machine's local time (not the commit's offset), and this asset was built in UTC+3. `TZ=UTC-3` is the POSIX spelling of UTC+3 and works without a timezone database; a zone name such as `Asia/Riyadh` on a system without one silently falls back to UTC. `core.autocrlf=true`, the Git for Windows default, writes CRLF line endings into the ZIP. On Windows, set `TZ` for the shell only (`$env:TZ='UTC-3'` in PowerShell, `set TZ=UTC-3` in cmd); there is no need to change the system clock.
 
 ### Open item
 

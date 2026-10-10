@@ -9,7 +9,7 @@ Format: Most recent changes listed first within each version.
 
 **Updated — docs/GITHUB_RELEASE_v2.2.0.md**
 
-- SHA256 reproduce command now sets `TZ=Asia/Riyadh`: `git archive` zips store local-time file stamps, so the published digest only reproduces in UTC+3.
+- v2.2.0 release notes (post-release docs fix): the SHA256 reproduce command now pins `TZ=UTC-3` and `core.autocrlf=false`, writes the ZIP to a file, and gives the Windows `certutil … SHA256` form. Without these, a rebuild matched the release asset only on a UTC+3 machine with LF checkouts. The `v2.2.0` tag still carries the old wording.
 
 ---
 
